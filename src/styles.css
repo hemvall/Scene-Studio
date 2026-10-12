@@ -1,0 +1,8 @@
+:root { font-family: Inter, 'Segoe UI', system-ui, sans-serif; color-scheme: dark; }
+html, body, #app { width: 100%; height: 100%; }
+body { margin: 0; background: #0e0f13; -webkit-font-smoothing: antialiased; }
+*, *::before, *::after { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; }
+button { text-transform: none; }
+h1, h2, h3, p { margin: 0; }
+svg, canvas { vertical-align: middle; }
