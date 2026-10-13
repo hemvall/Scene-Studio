@@ -269,7 +269,7 @@ export function validateProject(input: unknown): ContentProject {
   text(meta.updatedAt, 'updatedAt', 40)
   if (meta.renderedAt !== undefined) text(meta.renderedAt, 'renderedAt', 40)
   list(meta.tags, 20, 'tags').forEach((t) => text(t, 'tag', 40))
-  text(meta.notes, 'notes', 2000, true)
+  text(meta.notes, 'notes', 100000, true)
   if (meta.thumbnail !== undefined) text(meta.thumbnail, 'thumbnail', 200_000)
   if (meta.variantOf !== undefined) text(meta.variantOf, 'variantOf', 60)
   const scene = validateScene(p.scene)

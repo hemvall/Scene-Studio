@@ -18,3 +18,14 @@ it('preserves the editor script format', () => {
   const source = 'CAMERA: close-up Lew\nLEW: "Hello."\nPAUSE 0.7'
   expect(screenplayDialogue(source).text).toBe(source)
 })
+
+it('keeps a full screenplay longer than the former 2000 character notes limit', async () => {
+  const { ContentStudio } = await import('./api')
+  const { validateProject } = await import('./project')
+  const document = ContentStudio.create({cast:['lew']})
+  const source = '# Production screenplay\n' + 'Stage direction and engineering screen content.\n'.repeat(200)
+  document.setScript('LEW: "Hello."')
+  document.project.metadata.notes = source
+  document.compileTimeline()
+  expect(validateProject(document.project).metadata.notes).toBe(source)
+})

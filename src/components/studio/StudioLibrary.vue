@@ -35,24 +35,16 @@ function detectCast() {
 const scriptError = ref('')
 function createFromScript() {
   const imported = screenplayDialogue(pastedScript.value)
+  const missing = imported.names.filter(name => !scriptCast.value.some(c => c.name.toLowerCase() === name.toLowerCase() || c.role.toLowerCase() === name.toLowerCase()))
+  scriptCast.value.push(...missing.map(name => ({name,role:name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),kind: /lew/i.test(name) ? 'lew' as const : /dev|engineer/i.test(name) ? 'dev' as const : 'ceo' as const})))
   const parsed = parseScript(imported.text, scriptCast.value)
   if (!parsed.dialogue.length || !scriptCast.value.length) {
     scriptError.value = parsed.warnings.join(' · ') || 'Use character-labelled dialogue, e.g. LEW: "Your line."'
     return
   }
-  props.studio.newProject()
-  props.studio.editProject(s => {
-    s.setTitle(scriptTitle.value.trim() || 'My scripted reel')
-    s.setEnvironment(scriptSet.value)
-    s.project.cast = structuredClone(scriptCast.value.map(c => ({...c})))
-    s.project.metadata.notes = pastedScript.value
-    s.project.hook = parsed.dialogue[0]!.text
-    s.project.cta = ''
-    s.project.topic = ''
-    delete s.project.scripts
-    delete s.project.duration
-  })
-  props.studio.applyScriptText(imported.text)
+  const title = scriptTitle.value.trim() || pastedScript.value.match(/^#\s+(.+)$/m)?.[1] || 'My scripted reel'
+  const ok = props.studio.newFromScript(imported.text, scriptCast.value.map(c => ({...c})), scriptSet.value, title, pastedScript.value)
+  if (!ok) { scriptError.value = props.studio.message.value; return }
   if (imported.storyboard) props.studio.message.value = 'Dialogue imported. Original screenplay saved in project notes. Screen montages, walking, title cards and music cuts still need staging; they were not automatically rendered.'
 }
 const voiceKeys = props.studio.audio.keys

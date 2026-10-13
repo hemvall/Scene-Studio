@@ -19,7 +19,7 @@ import { presetPose, type PresetName } from '@/studio/camera/presets'
 import { subjectOf } from '@/studio/timeline/evaluate'
 import { download, ExportCancelled, renderStill, renderVideo, slug } from '@/studio/export/video'
 import { ContentStudio } from '@/studio/content/api'
-import { newProjectId, parseProject, projectFromScene, serializeProject, validateProject, type ContentProject, type ProjectStatus } from '@/studio/content/project'
+import { newProjectId, parseProject, projectFromScene, serializeProject, validateProject, type CastMember, type ContentProject, type ProjectStatus } from '@/studio/content/project'
 import { generateProject, translateScript } from '@/studio/content/generate'
 import type { ContentLanguage } from '@/studio/audio/plan'
 import { buildExample, EXAMPLE_REELS } from '@/studio/content/examples'
@@ -445,6 +445,22 @@ export function useStudioDocument() {
     openProject(next.id)
     leftPanel.value = 'script'
   }
+  /** Build and validate the entire import before adding anything to the library. */
+  function newFromScript(text: string, cast: CastMember[], environment: EnvironmentId, title: string, source: string) {
+    try {
+      const document = ContentStudio.create({title, cast, environment})
+      document.setScript(text)
+      if (!document.project.dialogue.length) throw new Error('No dialogue found. Check character names and quoted lines.')
+      document.project.metadata.notes = source
+      document.project.hook = document.project.dialogue[0]!.text
+      document.compileTimeline()
+      addProject(validateProject(document.project))
+      return true
+    } catch (e) {
+      message.value = e instanceof Error ? e.message : String(e)
+      return false
+    }
+  }
   function newProject(templateId?: string) {
     try {
       const studio = templateId ? ContentStudio.fromTemplate(templateId) : ContentStudio.create({ cast: ['lew'] })
@@ -664,6 +680,7 @@ export function useStudioDocument() {
     captureThumbnail,
     newProject,
     newFromExample,
+    newFromScript,
     duplicateProject,
     deleteProject,
     load,
