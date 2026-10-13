@@ -2,7 +2,7 @@ import type { CharacterKind } from '../scene/model'
 export const LEW_ARCHER = 'L0Dsvb3SLTyegXwtm47J'
 export interface ElevenSettings {stability:number;similarity_boost:number;style:number;speed:number;use_speaker_boost:boolean}
 export function elevenSettings(kind:CharacterKind):ElevenSettings {
-  if(kind==='lew') return {stability:.65,similarity_boost:.8,style:.15,speed:.95,use_speaker_boost:true}
+  if(kind==='lew') return {stability:.75,similarity_boost:.8,style:.05,speed:.9,use_speaker_boost:true}
   if(kind==='ceo') return {stability:.5,similarity_boost:.8,style:.25,speed:1.06,use_speaker_boost:true}
   return {stability:.5,similarity_boost:.75,style:.1,speed:1,use_speaker_boost:true}
 }

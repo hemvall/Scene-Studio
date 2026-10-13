@@ -133,12 +133,13 @@ export function useAudio(project: Ref<ContentProject>, editProject: (fn: (studio
     const model = p.voice.model || DEFAULT_MODELS[p.voice.provider]
     try {
       const resolvedVoices = {...p.voice.voices}
-      if(p.voice.provider==='elevenlabs') p.cast.forEach(m=>{if(m.kind==='lew' && !resolvedVoices[m.role]) resolvedVoices[m.role]=LEW_ARCHER})
+      if(p.voice.provider==='elevenlabs') p.cast.forEach(m=>{if(resolvedVoices[m.role]===LEW_ARCHER) delete resolvedVoices[m.role]})
       if (p.voice.provider === 'elevenlabs' && p.cast.some(m=>!resolvedVoices[m.role])) {
         voiceProgress.value = {...voiceProgress.value,current:'Loading available voices…'}
         const voices=await availableElevenVoices(providerKey.value,voiceAbort.signal)
         if(project.value.id!==p.id) return
-        p.cast.forEach((m,i)=>{if(!resolvedVoices[m.role]) resolvedVoices[m.role]=voices.filter(v=>v!==LEW_ARCHER)[m.kind==='ceo'?0:i%Math.max(1,voices.filter(v=>v!==LEW_ARCHER).length)] || voices[0]!})
+        const lewVoice=voices.includes('JBFqnCBsd6RMkjVDRZzb') ? 'JBFqnCBsd6RMkjVDRZzb' : voices[0]!
+        p.cast.forEach((m,i)=>{if(!resolvedVoices[m.role]) resolvedVoices[m.role]=m.kind==='lew'?lewVoice:(voices.filter(v=>v!==lewVoice)[i%Math.max(1,voices.filter(v=>v!==lewVoice).length)] || voices[0]!)})
         editProject(s=>s.setVoice({voices:resolvedVoices}))
       }
       for (const line of lines) {

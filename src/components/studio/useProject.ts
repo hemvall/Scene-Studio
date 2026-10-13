@@ -35,8 +35,14 @@ export function loadLibrary(): { projects: ContentProject[]; active: string } {
             if(project.voice.provider==='elevenlabs') for(const member of project.cast) {
               if(!project.voice.settings?.[member.role]) {
                 project.voice.settings={...project.voice.settings,[member.role]:elevenSettings(member.kind)}
-                if(member.kind==='lew') project.voice.voices[member.role]=LEW_ARCHER
+                if(member.kind==='lew' && project.voice.voices[member.role]===LEW_ARCHER) delete project.voice.voices[member.role]
                 if(member.kind==='lew' || member.kind==='ceo') project.voice.instructions[member.role]=member.kind==='lew'?LEW_DIRECTION:CEO_DIRECTION
+              }
+            }
+            if(project.voice.provider==='elevenlabs') for(const member of project.cast) {
+              if(member.kind==='lew' && project.voice.voices[member.role]===LEW_ARCHER) {
+                delete project.voice.voices[member.role]
+                project.voice.settings={...project.voice.settings,[member.role]:elevenSettings('lew')}
               }
             }
             return project

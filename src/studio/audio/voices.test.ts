@@ -11,3 +11,10 @@ it('reports a permission problem without including the key',async()=>{
   vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:false,status:403}))
   await expect(availableElevenVoices('test-only-placeholder')).rejects.toThrow('Enable Voices Read')
 })
+
+it('excludes paid professional voices and falls back to personal generated voices',async()=>{
+  const fetcher=vi.fn().mockResolvedValueOnce({ok:true,json:async()=>({voices:[{voice_id:'paid-voice',category:'professional',sharing:{free_users_allowed:false}}]})}).mockResolvedValueOnce({ok:true,json:async()=>({voices:[{voice_id:'personal-voice',category:'generated'}]})})
+  vi.stubGlobal('fetch',fetcher)
+  expect(await availableElevenVoices('test-only-placeholder')).toEqual(['personal-voice'])
+  expect(fetcher.mock.calls[1]![0]).toContain('category=generated')
+})

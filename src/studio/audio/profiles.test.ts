@@ -1,9 +1,9 @@
 import { expect, it } from 'vitest'
 import { LEW_ARCHER, elevenSettings } from './profiles'
 import { clipKey } from './tts'
-it('uses the requested Archer profile',()=>{
+it('uses a restrained slower delivery for Lew',()=>{
   expect(LEW_ARCHER).toBe('L0Dsvb3SLTyegXwtm47J')
-  expect(elevenSettings('lew')).toEqual({stability:.65,similarity_boost:.8,style:.15,speed:.95,use_speaker_boost:true})
+  expect(elevenSettings('lew')).toEqual({stability:.75,similarity_boost:.8,style:.05,speed:.9,use_speaker_boost:true})
   expect(elevenSettings('ceo').speed).toBeGreaterThan(elevenSettings('lew').speed)
 })
 it('regenerates cached audio when synthesis settings change',async()=>{
