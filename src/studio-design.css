@@ -4,7 +4,8 @@
 .studio button.primary{color:var(--accent-ink)}
 .studio button:disabled{opacity:.45}
 .studio button:focus-visible,.studio input:focus-visible,.studio select:focus-visible,.studio textarea:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.library{width:100%;max-width:1440px;padding:0 40px 48px}
+/* The scroll container spans the window; only its content is constrained. */
+.library{width:100%;max-width:none;min-height:0;margin:0;padding:0 max(40px,calc((100% - 1360px)/2)) 48px;scrollbar-gutter:stable}
 .library-head{height:80px;border-bottom:1px solid var(--line);margin-bottom:34px}
 .brand{font-size:22px;font-weight:650;letter-spacing:-1px;gap:5px}
 .brand small{margin-left:18px;color:var(--muted);font-size:10px;font-weight:500;letter-spacing:1.5px}
