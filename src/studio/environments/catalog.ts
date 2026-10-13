@@ -93,11 +93,11 @@ export const ENVIRONMENTS: Record<EnvironmentId, EnvironmentDef> = {
       board: { position: [-3.3, 0, -1.6], yaw: 1.2 }
     },
     dressing: [
-      { id: 'tv', kind: 'monitor', position: [0, 1.55, -4.4], rotation: [0, 0, 0], scale: 2.6, color: '#1c1e24', screen: 'agent-workflow' },
+      { id: 'tv', kind: 'monitor', position: [0, 0.592, -4.36], rotation: [0, 0, 0], scale: 2.6, color: '#1c1e24', screen: 'agent-workflow' },
       { id: 'whiteboard', kind: 'whiteboard', position: [-4.88, 1.75, -1.6], rotation: [0, Math.PI / 2, 0], scale: 1, color: '#f6f5f0' },
       { id: 'documents', kind: 'documents', position: [-0.9, 0.79, -0.7], rotation: [0, 0.4, 0], scale: 1, color: '#f3efe6' },
-      { id: 'coffee', kind: 'coffee', position: [0.9, 0.79, -0.5], rotation: [0, 0, 0], scale: 1, color: '#d9d4c8' },
-      { id: 'laptop', kind: 'laptop', position: [0.1, 0.79, -1.5], rotation: [0, Math.PI, 0], scale: 1, color: '#2c2f36', screen: 'lew-dashboard' }
+      { id: 'coffee', kind: 'iced-latte', position: [0.45, 0.79, -1.02], rotation: [0, 0, 0], scale: 1, color: '#d9d4c8' },
+      { id: 'laptop', kind: 'laptop', position: [-0.15, 0.79, -1.04], rotation: [0, Math.PI, 0], scale: 1, color: '#2c2f36', screen: 'lew-dashboard' }
     ],
     camera: { position: [2.8, 2.0, 4.8], target: [0, 1.4, -1.2], fov: 40 },
     fog: 0.01,

@@ -84,7 +84,7 @@ const characterColor = (e: TimelineEvent) => ('character' in e ? scene.value.cha
       <button class="ghost" @click="studio.addEventAtPlayhead('dialogue')"><Icon name="chat" /> Line</button>
       <button class="ghost" @click="studio.addEventAtPlayhead('action')">Action</button>
       <span class="divider" />
-      <label class="dim">Duration <input class="small" type="number" min="0.5" max="300" step="0.5" :value="scene.duration" @change="studio.setDuration(Number(($event.target as HTMLInputElement).value))" /> s</label>
+      <label class="dim">Duration <input class="small" type="number" min="0.5" max="300" step="0.1" :value="scene.duration" @change="studio.setDuration(Number(($event.target as HTMLInputElement).value))" /> s</label>
     </div>
     <div class="timeline-body">
       <div class="track-names">

@@ -120,6 +120,22 @@ export function createProp(data: PropData) {
       screen(body, [0.08, 0.165], [0, 0.09, 0.0065], data.screen, [288, 608])
       break
     }
+    case 'iced-latte': {
+      // Clear takeaway cup with milk, espresso, visible ice and a straw.
+      const cup = cylinder(root, 0.085, 0.065, 0.26, [0, 0.13, 0], '#e8f2f4');
+      cup.material.dispose();
+      cup.material = new T.MeshPhysicalMaterial({color:'#e8f2f4',transparent:true,opacity:0.24,roughness:0.12,side:T.DoubleSide,depthWrite:false});
+      tint(cylinder(root, 0.072, 0.058, 0.14, [0, 0.08, 0], '#e6cba5', {roughness:0.5}));
+      cylinder(root, 0.076, 0.072, 0.065, [0, 0.18, 0], '#99623f', {roughness:0.45});
+      for (const [x,z,y] of [[-0.03,0.02,0.218],[0.025,-0.025,0.228],[0.025,0.025,0.215]]) {
+        const ice = box(root,[0.044,0.035,0.04],[x!,y!,z!],'#dfedf0',{roughness:0.18,shadow:false});
+        ice.rotation.y = x! * 12;
+      }
+      cylinder(root, 0.09, 0.09, 0.012, [0, 0.265, 0], '#d7e7e8', {roughness:0.2});
+      const straw = cylinder(root, 0.009, 0.009, 0.23, [0.03, 0.3, 0.01], '#e9bf78');
+      straw.rotation.z = -0.12;
+      break;
+    }
     case 'coffee': {
       cylinder(root, 0.06, 0.045, 0.14, [0, 0.07, 0], '#f1ece2', { roughness: 0.7 })
       tint(cylinder(root, 0.062, 0.054, 0.06, [0, 0.085, 0], data.color, { roughness: 0.8 }))

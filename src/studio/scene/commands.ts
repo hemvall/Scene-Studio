@@ -306,6 +306,7 @@ export const PROP_COLORS: Record<PropKind, string> = {
   phone: '#1f2229',
   monitor: '#23262e',
   coffee: '#3b6e8f',
+  'iced-latte': '#e6cba5',
   whiteboard: '#f6f5f0',
   documents: '#f3efe6',
   server: '#1b2230'

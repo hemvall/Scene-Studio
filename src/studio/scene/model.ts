@@ -40,6 +40,7 @@ export type PropKind =
   | 'phone'
   | 'monitor'
   | 'coffee'
+  | 'iced-latte'
   | 'whiteboard'
   | 'documents'
   | 'server'
@@ -181,6 +182,7 @@ export const PROP_KINDS: PropKind[] = [
   'phone',
   'monitor',
   'coffee',
+  'iced-latte',
   'whiteboard',
   'documents',
   'server'

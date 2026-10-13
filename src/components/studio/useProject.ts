@@ -1,5 +1,6 @@
 import { validateScene } from '@/studio/serialization/scene'
 import { projectFromScene, serializeProject, validateProject, type ContentProject } from '@/studio/content/project'
+import { ENVIRONMENTS } from '@/studio/environments/catalog'
 import { exampleProjects } from '@/studio/content/examples'
 /** Browser storage of the content library: a list of projects, validated on the way in. */
 const KEY = 'scene-studio-library-v1'
@@ -12,7 +13,18 @@ export function loadLibrary(): { projects: ContentProject[]; active: string } {
       const projects = (Array.isArray(parsed.projects) ? parsed.projects : [])
         .map((p) => {
           try {
-            return validateProject(p)
+            const project = validateProject(p)
+            if (project.environment === 'meeting-room') {
+              const old: Record<string, number[]> = {tv:[0,1.55,-4.4],laptop:[0.1,0.79,-1.5],coffee:[0.9,0.79,-0.5]};
+              for (const prop of project.scene.props) {
+                const position = old[prop.id];
+                if (position && prop.position.every((v,i) => Math.abs(v-position[i]!) < 0.0001)) {
+                  const replacement = ENVIRONMENTS['meeting-room'].dressing.find(p => p.id === prop.id)!;
+                  Object.assign(prop, structuredClone(replacement));
+                }
+              }
+            }
+            return project
           } catch {
             return null
           }

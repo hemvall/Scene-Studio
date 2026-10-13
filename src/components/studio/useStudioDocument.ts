@@ -374,7 +374,11 @@ export function useStudioDocument() {
     if (selectedEvent.value === id) selectedEvent.value = null
   }
   function setDuration(value: number) {
-    edit((c) => c.setDuration(Math.max(0.5, Math.min(300, value))))
+    const seconds = Math.max(0.5, Math.min(300, value))
+    editProject((s) => {
+      s.project.duration = seconds
+      new SceneCommands(s.project.scene).setDuration(seconds)
+    })
   }
   function setAspect(aspect: Aspect) {
     edit((c) => c.setAspect(aspect))
