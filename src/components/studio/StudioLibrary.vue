@@ -7,6 +7,7 @@ import { EXAMPLE_REELS } from '@/studio/content/examples'
 import { OUTPUT_PRESETS } from '@/studio/render/presets'
 import { ENVIRONMENTS } from '@/studio/environments/catalog'
 import { PROJECT_STATUSES, type ContentProject, type ProjectStatus } from '@/studio/content/project'
+import { parseScript } from '@/studio/content/script'
 import { projectDuration } from '@/studio/content/compile'
 const props = defineProps<{ studio: StudioDocument }>()
 const { projects, generating, message, canGenerate, claude } = props.studio
@@ -17,6 +18,29 @@ const layout = ref<'grid' | 'list'>('grid')
 const brief = ref('')
 const menu = ref(false)
 const keyOpen = ref(false)
+const scriptOpen = ref(false)
+const pastedScript = ref('')
+const scriptTitle = ref('')
+const scriptTemplate = ref('misconception')
+const scriptError = ref('')
+function createFromScript() {
+  const template = TEMPLATES.find(t => t.id === scriptTemplate.value)!
+  const parsed = parseScript(pastedScript.value, template.cast)
+  if (!parsed.dialogue.length || parsed.warnings.length) {
+    scriptError.value = parsed.warnings.join(' · ') || 'Use character-labelled dialogue, e.g. LEW: "Your line."'
+    return
+  }
+  props.studio.newProject(template.id)
+  props.studio.editProject(s => {
+    s.setTitle(scriptTitle.value.trim() || 'My scripted reel')
+    s.project.hook = parsed.dialogue[0]!.text
+    s.project.cta = ''
+    s.project.topic = ''
+    delete s.project.scripts
+    delete s.project.duration
+  })
+  props.studio.applyScriptText(pastedScript.value)
+}
 const voiceKeys = props.studio.audio.keys
 function moveVoiceKey() {
   voiceKeys.value.elevenlabs = claude.value.apiKey.trim()
@@ -70,9 +94,22 @@ onBeforeUnmount(() => window.removeEventListener('pointerdown', outside))
 </script>
 <template>
   <section class="library">
+    <div v-if="scriptOpen" class="backdrop" @click.self="scriptOpen = false">
+      <form class="dialog existing-script-dialog" role="dialog" aria-modal="true" aria-labelledby="existing-script-title" @submit.prevent="createFromScript">
+        <header><h2 id="existing-script-title">From existing script</h2><button type="button" class="ghost" aria-label="Close script dialog" @click="scriptOpen = false"><Icon name="x" /></button></header>
+        <p class="note">No Anthropic key needed. Paste dialogue, build the scene, then generate voices and render.</p>
+        <label class="field-col">Reel title<input v-model="scriptTitle" aria-label="New reel title" placeholder="Name your reel" /></label>
+        <label class="field-col">Cast and set<select v-model="scriptTemplate" aria-label="Script cast and set"><option v-for="t in TEMPLATES" :key="t.id" :value="t.id">{{ t.name }} · {{ t.cast.map(c => c.name).join(' + ') }} · {{ ENVIRONMENTS[t.environment].name }}</option></select></label>
+        <label class="field-col">Your script<textarea v-model="pastedScript" aria-label="Existing script" placeholder='CAMERA: two-shot Lew CEO&#10;CEO: "We already have ChatGPT."&#10;LEW (deadpan): "Congratulations."' spellcheck="false" /></label>
+        <p class="note">Use names from the selected cast: NAME: "Dialogue". CAMERA, PAUSE and [00:03] timing are optional. Change the cast or set later in the editor.</p>
+        <p v-if="scriptError" role="alert">{{ scriptError }}</p>
+        <footer><span class="dim">Script → Scene → Voice → MP4</span><button type="submit" class="primary" :disabled="!pastedScript.trim()">Build scene</button></footer>
+      </form>
+    </div>
     <header class="library-head">
       <a href="/#" class="brand">Scene <span>Studio</span> <small>Creative workspace</small></a>
       <div class="spacer" />
+      <button class="ghost" @click="scriptOpen = true"><Icon name="script" /> From existing script</button>
       <button class="ghost" title="Import a project or scene JSON" @click="studio.fileInput.value?.click()"><Icon name="import" /> Import</button>
       <span class="menu">
         <button class="primary" :aria-expanded="menu" @click="menu = !menu"><Icon name="plus" /> New reel</button>
