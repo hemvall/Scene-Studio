@@ -102,7 +102,16 @@ export function buildLew(rig: CharacterRig) {
   // Eyes sit on the mask; their lids are mask-coloured so a half-lid reads as the mask's edge.
   for (const side of [-1, 1]) {
     const eye = rig.addEye([side * 0.22, 0.5, 0.535], 0.145, 0.85, mask, '#f5f4f0')
-    // Keep the upper lid on the eye surface, without a second oversized mask lobe.
+    // Attach the entire eye to the actual head facet, facing its surface normal.
+    // The shallow depth applies to whites, pupils, lids and outline shells together.
+    head.updateWorldMatrix(true, false)
+    const ray = new T.Raycaster(new T.Vector3(side * 0.22, 0.5, 2), new T.Vector3(0, 0, -1))
+    const hit = ray.intersectObject(head, false)[0]
+    if (!hit?.face) throw new Error('Raccoon eye attachment missed the head')
+    const normal = hit.face.normal.clone().applyNormalMatrix(new T.Matrix3().getNormalMatrix(head.matrixWorld))
+    eye.group.position.copy(hit.point).addScaledVector(normal, 0.012)
+    eye.group.quaternion.setFromUnitVectors(new T.Vector3(0, 0, 1), normal)
+    eye.group.scale.z = 0.12
     eye.lid.scale.y *= 0.45
     eye.lid.position.z = 0.088
   }
