@@ -15,6 +15,7 @@ import { OUTPUT_FORMATS, OUTPUT_PRESETS } from '@/studio/render/presets'
 const studio = useStudioDocument()
 const { project, scene, view, time, playing, fps, ms, message, jsonOpen, json, exporting, panel, leftPanel } = studio
 const exportOpen = ref(false)
+const focusView = ref(false)
 const clock = computed(() => {
   const t = time.value,
     m = Math.floor(t / 60),
@@ -27,7 +28,7 @@ const exportPercent = computed(() => (exporting.value.total ? Math.round((export
   <section class="studio" @click="exportOpen = false">
     <StudioLibrary v-if="view === 'library'" :studio="studio" />
     <template v-else>
-      <header class="topbar">
+      <header class="topbar"><span class="editor-mark" aria-label="Scene Studio">S<span>S</span></span>
         <button class="ghost" title="Back to the library" @click="studio.toLibrary()"><Icon name="back" /> Library</button>
         <input
           class="scene-name"
@@ -56,12 +57,13 @@ const exportPercent = computed(() => (exporting.value.total ? Math.round((export
         <button class="ghost icon-only" :title="studio.audio.muted.value ? 'Unmute' : 'Mute preview audio'" :aria-pressed="studio.audio.muted.value" @click="studio.audio.toggleMute()">
           <Icon :name="studio.audio.muted.value ? 'mute' : studio.audio.mixing.value ? 'mixing' : 'sound'" />
         </button>
+        <button class="ghost focus-toggle" :aria-pressed="focusView" @click="focusView = !focusView"><Icon name="scene" /> {{ focusView ? 'Show panels' : 'Focus view' }}</button>
         <button class="ghost" title="Rebuild the timeline from the script" @click="studio.compile()"><Icon name="refresh" /> Compile</button>
         <div class="menu" @click.stop>
           <button class="primary" :aria-expanded="exportOpen" @click="exportOpen = !exportOpen"><Icon name="video" /> Render</button>
           <div v-if="exportOpen" class="menu-list">
             <button v-for="f in OUTPUT_FORMATS" :key="f" @click="exportOpen = false; studio.renderReel(f)">
-              <Icon name="reel" /> {{ OUTPUT_PRESETS[f].name }} <small>{{ OUTPUT_PRESETS[f].width }}×{{ OUTPUT_PRESETS[f].height }} · silent MP4</small>
+              <Icon name="reel" /> {{ OUTPUT_PRESETS[f].name }} <small>{{ OUTPUT_PRESETS[f].width }}×{{ OUTPUT_PRESETS[f].height }} · MP4</small>
             </button>
             <button @click="exportOpen = false; studio.exportPNG()"><Icon name="image" /> Frame · PNG <small>at playhead</small></button>
             <button @click="exportOpen = false; studio.exportJSON()"><Icon name="json" /> Project · JSON</button>
@@ -70,8 +72,8 @@ const exportPercent = computed(() => (exporting.value.total ? Math.round((export
           </div>
         </div>
       </header>
-      <div class="workspace">
-        <aside class="outliner">
+      <div class="workspace" :class="{ 'focus-view': focusView }">
+        <aside v-show="!focusView" class="outliner">
           <div class="segmented tabs" role="tablist">
             <button role="tab" :aria-selected="leftPanel === 'script'" :class="{ active: leftPanel === 'script' }" @click="leftPanel = 'script'"><Icon name="script" /> Script</button>
             <button role="tab" :aria-selected="leftPanel === 'scene'" :class="{ active: leftPanel === 'scene' }" @click="leftPanel = 'scene'"><Icon name="scene" /> Scene</button>
@@ -106,7 +108,7 @@ const exportPercent = computed(() => (exporting.value.total ? Math.round((export
             <span class="dim">{{ OUTPUT_SIZE[scene.aspect].join('×') }} · {{ scene.fps }} fps · {{ scene.environment.id }}</span>
           </div>
         </main>
-        <aside class="side">
+        <aside v-show="!focusView" class="side">
           <div class="segmented tabs" role="tablist">
             <button role="tab" :aria-selected="panel === 'inspector'" :class="{ active: panel === 'inspector' }" @click="panel = 'inspector'">
               <Icon name="sliders" /> Inspector

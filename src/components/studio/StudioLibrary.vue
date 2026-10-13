@@ -11,6 +11,9 @@ import { projectDuration } from '@/studio/content/compile'
 const props = defineProps<{ studio: StudioDocument }>()
 const { projects, generating, message, canGenerate, claude } = props.studio
 const filter = ref<'all' | ProjectStatus>('all')
+const search = ref('')
+const sort = ref('recent')
+const layout = ref<'grid' | 'list'>('grid')
 const brief = ref('')
 const menu = ref(false)
 const keyOpen = ref(false)
@@ -21,7 +24,9 @@ const EXAMPLES = [
 ]
 const visible = computed(() => {
   const list = filter.value === 'all' ? projects.value : projects.value.filter((p) => p.status === filter.value)
-  return [...list].sort((a, b) => b.metadata.updatedAt.localeCompare(a.metadata.updatedAt))
+  const query = search.value.trim().toLocaleLowerCase()
+  return list.filter(p => !query || [p.title, p.hook, p.topic, ...p.cast.map(c => c.name)].join(' ').toLocaleLowerCase().includes(query))
+    .sort((a, b) => sort.value === 'title' ? a.title.localeCompare(b.title) : sort.value === 'oldest' ? a.metadata.updatedAt.localeCompare(b.metadata.updatedAt) : b.metadata.updatedAt.localeCompare(a.metadata.updatedAt))
 })
 const counts = computed(() => ({
   all: projects.value.length,
@@ -55,7 +60,7 @@ onBeforeUnmount(() => window.removeEventListener('pointerdown', outside))
 <template>
   <section class="library">
     <header class="library-head">
-      <a href="/#" class="brand">Scene <span>Studio</span> <small>content engine</small></a>
+      <a href="/#" class="brand">Scene <span>Studio</span> <small>Creative workspace</small></a>
       <div class="spacer" />
       <button class="ghost" title="Import a project or scene JSON" @click="studio.fileInput.value?.click()"><Icon name="import" /> Import</button>
       <span class="menu">
@@ -68,6 +73,8 @@ onBeforeUnmount(() => window.removeEventListener('pointerdown', outside))
         </div>
       </span>
     </header>
+    <div class="library-intro"><div><p class="eyebrow">YOUR WORKSPACE</p><h1>A story starts here.</h1><p>Write, direct and render your next scene.</p></div><span class="library-total">{{ projects.length }} <small>reels in your library</small></span></div>
+    <div class="composer-heading"><Icon name="wand" /><strong>From idea to scene</strong><span>Start with a brief or choose a template above.</span></div>
     <form class="command-bar" @submit.prevent="submit">
       <Icon name="wand" :size="18" />
       <input v-model="brief" type="text" placeholder="Describe your video… e.g. “25-second Reel: a CEO asks Lew why they need an agent when they already have ChatGPT”" aria-label="Video brief" :disabled="generating" />
@@ -90,16 +97,17 @@ onBeforeUnmount(() => window.removeEventListener('pointerdown', outside))
     <div v-if="!projects.length || projects.every((p) => !p.dialogue.length)" class="examples">
       <button v-for="e in EXAMPLES" :key="e" class="suggestion" :disabled="!canGenerate" @click="brief = e; submit()">{{ e }}</button>
     </div>
+    <div class="library-tools"><h2>Reel library</h2><div class="spacer"/><input v-model="search" type="search" aria-label="Search reels" placeholder="Search title, topic or cast…"/><select v-model="sort" aria-label="Sort reels"><option value="recent">Recently edited</option><option value="oldest">Oldest first</option><option value="title">Title A–Z</option></select><div class="segmented" aria-label="Library layout"><button :class="{active:layout === 'grid'}" :aria-pressed="layout === 'grid'" @click="layout='grid'"><Icon name="library"/> Grid</button><button :class="{active:layout === 'list'}" :aria-pressed="layout === 'list'" @click="layout='list'"><Icon name="script"/> List</button></div></div>
     <nav class="filters" aria-label="Status filter">
       <button v-for="f in ['all', ...PROJECT_STATUSES] as const" :key="f" class="chip" :class="{ active: filter === f }" @click="filter = f">
         {{ f === 'all' ? 'All' : f === 'draft' ? 'Drafts' : f === 'ready' ? 'Ready' : 'Rendered' }} <small>{{ counts[f] }}</small>
       </button>
     </nav>
-    <div class="cards">
+    <div class="cards" :class="{ 'cards-list': layout === 'list' }">
       <article v-for="p in visible" :key="p.id" class="card" :class="p.status">
         <button class="thumb" :style="{ background: ENVIRONMENTS[p.environment].background }" :title="`Open ${p.title}`" @click="studio.openProject(p.id)">
           <img v-if="p.metadata.thumbnail" :src="p.metadata.thumbnail" alt="" />
-          <span v-else class="thumb-empty"><Icon name="film" :size="22" /></span>
+          <span v-else class="thumb-empty"><Icon name="scene" :size="32" /><strong>{{ ENVIRONMENTS[p.environment].name }}</strong><small>No preview yet · open to direct</small></span>
           <span class="thumb-format">{{ OUTPUT_PRESETS[p.format].aspect }} · {{ p.voice.language.toUpperCase() }}</span>
         </button>
         <div class="card-body">
@@ -121,6 +129,6 @@ onBeforeUnmount(() => window.removeEventListener('pointerdown', outside))
         </div>
       </article>
     </div>
-    <p v-if="!visible.length" class="empty">Nothing here yet.</p>
+    <div v-if="!visible.length" class="empty"><h2>{{ search ? 'No matching reels' : 'Your next scene awaits' }}</h2><p>{{ search ? 'Try another title, topic or character.' : 'Start a new reel or choose a different status.' }}</p><button v-if="search" class="ghost" @click="search = ''">Clear search</button></div>
   </section>
 </template>
