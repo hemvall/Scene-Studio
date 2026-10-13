@@ -243,6 +243,11 @@ export function validateProject(input: unknown): ContentProject {
   text(voice.model, 'voice model', 80, true)
   for (const v of Object.values(record(voice.voices, 'voices'))) text(v, 'voice id', 80, true)
   for (const v of Object.values(record(voice.instructions, 'voice instructions'))) text(v, 'voice instructions', 400, true)
+  if (voice.settings !== undefined) for(const value of Object.values(record(voice.settings,'voice settings'))) {
+    const settings=record(value,'voice settings')
+    number(settings.stability,0,1,'stability');number(settings.similarity_boost,0,1,'similarity boost');number(settings.style,0,1,'style');number(settings.speed,.7,1.2,'voice speed')
+    if(typeof settings.use_speaker_boost!=='boolean') throw new Error('speaker boost must be boolean')
+  }
   const audio = record(p.audio, 'audio config')
   const music = record(audio.music, 'music')
   one(music.track, MUSIC_TRACKS, 'music track')

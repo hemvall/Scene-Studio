@@ -244,6 +244,7 @@ export class ContentStudio {
     if (patch.language !== undefined) v.language = patch.language
     if (patch.model !== undefined) v.model = patch.model
     if (patch.voices) v.voices = { ...v.voices, ...patch.voices }
+    if (patch.settings) v.settings = {...v.settings,...patch.settings}
     if (patch.instructions) v.instructions = { ...v.instructions, ...patch.instructions }
     this.touch()
   }

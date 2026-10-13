@@ -20,7 +20,7 @@ export function screenplayDialogue(source: string) {
     if(!g.lines.length) continue
     const weights=g.lines.map(l=>Math.max(1,l.text.split(/\s+/).length)), sum=weights.reduce((a,b)=>a+b,0)
     const budget=Math.max(.2*g.lines.length,g.end-g.start-.15*g.lines.length-.5)
-    let time=g.start
+    let time=g.start+(g.lines.length===1 && /^(…|\.\.\.)/.test(g.lines[0]!.text)? .6:0)
     output.push('['+time+']','CAMERA: medium '+g.lines[0]!.speaker)
     for(const [i,l] of g.lines.entries()) {
       const duration=Math.max(.2,Math.min(budget*weights[i]!/sum,weights[i]!*.32+.6))

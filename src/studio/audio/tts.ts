@@ -8,7 +8,9 @@ import { clipOf } from './mix'
  * and ElevenLabs (`/v1/text-to-speech`). Nothing is synthesised locally: without
  * a key the lines stay timed by reading speed and the render stays silent.
  */
+import type { ElevenSettings } from './profiles'
 export interface TtsRequest {
+  voiceSettings?: ElevenSettings
   provider: TtsProvider
   apiKey: string
   model: string
@@ -47,7 +49,7 @@ export const VOICE_DEFAULTS: Record<CharacterKind, { openai: string; instruction
   bo: { openai: 'fable', instructions: { fr: 'Voix grave, lente, rassurante.', en: 'Deep, slow, reassuring voice.' } }
 }
 export function clipKey(r: TtsRequest) {
-  return sha256([r.provider, r.model, r.voice, r.language, r.instructions ?? '', r.text].join(''))
+  return sha256([r.provider, r.model, r.voice, r.language, r.instructions ?? '', JSON.stringify(r.voiceSettings ?? {}), r.text].join(''))
 }
 async function fetchBytes(r: TtsRequest, signal?: AbortSignal): Promise<ArrayBuffer> {
   let response: Response
@@ -63,7 +65,7 @@ async function fetchBytes(r: TtsRequest, signal?: AbortSignal): Promise<ArrayBuf
       method: 'POST',
       signal,
       headers: { 'xi-api-key': r.apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: r.text, model_id: r.model, language_code: r.language })
+      body: JSON.stringify({ text: r.text, model_id: r.model, voice_settings: r.voiceSettings })
     })
   } else throw new Error('No voice provider selected')
   if (!response.ok) {

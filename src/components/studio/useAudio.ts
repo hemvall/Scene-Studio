@@ -6,6 +6,7 @@ import { decodeClip } from '@/studio/audio/store'
 import { AudioPreview } from '@/studio/audio/player'
 import { DEFAULT_MODELS, importMusic, storeTrack, synthesizeLine, VOICE_DEFAULTS } from '@/studio/audio/tts'
 import { archiveCredit, archiveFiles, fetchTrack, libraryTrack, searchArchive, type ArchiveFile, type ArchiveItem } from '@/studio/audio/library'
+import { LEW_ARCHER, elevenSettings } from '@/studio/audio/profiles'
 import { availableElevenVoices } from '@/studio/audio/voices'
 import { ContentStudio } from '@/studio/content/api'
 /** Provider keys live in the browser, next to the Anthropic key. */
@@ -132,11 +133,12 @@ export function useAudio(project: Ref<ContentProject>, editProject: (fn: (studio
     const model = p.voice.model || DEFAULT_MODELS[p.voice.provider]
     try {
       const resolvedVoices = {...p.voice.voices}
+      if(p.voice.provider==='elevenlabs') p.cast.forEach(m=>{if(m.kind==='lew' && !resolvedVoices[m.role]) resolvedVoices[m.role]=LEW_ARCHER})
       if (p.voice.provider === 'elevenlabs' && p.cast.some(m=>!resolvedVoices[m.role])) {
         voiceProgress.value = {...voiceProgress.value,current:'Loading available voices…'}
         const voices=await availableElevenVoices(providerKey.value,voiceAbort.signal)
         if(project.value.id!==p.id) return
-        p.cast.forEach((m,i)=>{if(!resolvedVoices[m.role]) resolvedVoices[m.role]=voices[i%voices.length]!})
+        p.cast.forEach((m,i)=>{if(!resolvedVoices[m.role]) resolvedVoices[m.role]=voices.filter(v=>v!==LEW_ARCHER)[m.kind==='ceo'?0:i%Math.max(1,voices.filter(v=>v!==LEW_ARCHER).length)] || voices[0]!})
         editProject(s=>s.setVoice({voices:resolvedVoices}))
       }
       for (const line of lines) {
@@ -152,6 +154,7 @@ export function useAudio(project: Ref<ContentProject>, editProject: (fn: (studio
             apiKey: providerKey.value,
             model,
             voice,
+            voiceSettings: p.voice.provider === 'elevenlabs' ? (p.voice.settings?.[member.role] ?? elevenSettings(member.kind)) : undefined,
             language: p.voice.language,
             instructions: p.voice.instructions[member.role] ?? defaults.instructions[p.voice.language],
             text: line.text

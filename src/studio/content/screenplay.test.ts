@@ -10,7 +10,7 @@ it('imports Markdown dialogue and scene times without speaking screen code or ti
   const parsed = parseScript(imported.text,cast)
   expect(parsed.warnings).toEqual([])
   expect(parsed.dialogue).toHaveLength(5)
-  expect(parsed.dialogue.at(-1)?.start).toBe(23)
+  expect(parsed.dialogue.at(-1)?.start).toBe(23.6)
   expect(imported.text).not.toContain('MODEL GATEWAY')
   expect(imported.text).not.toContain('AI Engineering')
 })

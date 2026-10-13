@@ -3,6 +3,7 @@ import { projectFromScene, serializeProject, validateProject, type ContentProjec
 import { ENVIRONMENTS } from '@/studio/environments/catalog'
 import { ContentStudio } from '@/studio/content/api'
 import { screenplayDialogue } from '@/studio/content/screenplay'
+import { LEW_ARCHER, elevenSettings, LEW_DIRECTION, CEO_DIRECTION } from '@/studio/audio/profiles'
 import { exampleProjects } from '@/studio/content/examples'
 /** Browser storage of the content library: a list of projects, validated on the way in. */
 const KEY = 'scene-studio-library-v1'
@@ -30,6 +31,13 @@ export function loadLibrary(): { projects: ContentProject[]; active: string } {
               const imported = new ContentStudio(project)
               imported.setScript(screenplayDialogue(project.metadata.notes).text)
               imported.compileTimeline()
+            }
+            if(project.voice.provider==='elevenlabs') for(const member of project.cast) {
+              if(!project.voice.settings?.[member.role]) {
+                project.voice.settings={...project.voice.settings,[member.role]:elevenSettings(member.kind)}
+                if(member.kind==='lew') project.voice.voices[member.role]=LEW_ARCHER
+                if(member.kind==='lew' || member.kind==='ceo') project.voice.instructions[member.role]=member.kind==='lew'?LEW_DIRECTION:CEO_DIRECTION
+              }
             }
             return project
           } catch {

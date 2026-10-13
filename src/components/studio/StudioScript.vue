@@ -10,6 +10,7 @@ import { PROJECT_STATUSES, type ProjectStatus } from '@/studio/content/project'
 import { SUBTITLE_PRESETS } from '@/studio/subtitles/style'
 import type { CharacterKind, EnvironmentId } from '@/studio/scene/model'
 import { MUSIC_LABELS, MUSIC_TRACKS, TTS_PROVIDERS, type ContentLanguage, type MusicTrack, type TtsProvider } from '@/studio/audio/plan'
+import { LEW_ARCHER } from '@/studio/audio/profiles'
 import { DEFAULT_MODELS, OPENAI_VOICES, VOICE_DEFAULTS } from '@/studio/audio/tts'
 import { licenseLabel, MUSIC_LIBRARY } from '@/studio/audio/library'
 const props = defineProps<{ studio: StudioDocument }>()
@@ -32,7 +33,7 @@ function num(ev: Event) {
   return Number((ev.target as HTMLInputElement).value)
 }
 function voiceOf(role: string, kind: CharacterKind) {
-  return project.value.voice.voices[role] || (project.value.voice.provider === 'openai' ? VOICE_DEFAULTS[kind].openai : '')
+  return project.value.voice.voices[role] || (project.value.voice.provider === 'openai' ? VOICE_DEFAULTS[kind].openai : project.value.voice.provider === 'elevenlabs' && kind === 'lew' ? LEW_ARCHER : '')
 }
 // Editing state is independent of the viewport's per-frame rerenders.
 const voiceDrafts = ref<Record<string,string>>({})
@@ -217,7 +218,8 @@ function kindLabel(kind: CharacterKind) {
       <p v-if="voiceProgress.running" class="note">{{ voiceProgress.done }}/{{ voiceProgress.total }} · {{ voiceProgress.current }}</p>
       <p class="note">The key stays in this browser and goes only to the provider. Clips are stored locally under a content hash; a line is synthesised once per text and voice. Each clip sets its line's length and slides the beats after it.</p>
     </template>
-    <p v-else class="note">Without a provider the lines are timed by reading speed and the mouth is animated by a rhythm, not by a voice.</p>
+    <p v-if="project.voice.provider === 'elevenlabs'" class="note">Lew: Archer · stability 65% · similarity 80% · style 15% · speed 0.95 · speaker boost. CEO: a distinct available male voice, faster delivery. Direction notes are not prompts for ElevenLabs V2.</p>
+    <p v-if="project.voice.provider === 'none'" class="note">Without a provider the lines are timed by reading speed and the mouth is animated by a rhythm, not by a voice.</p>
     <h4>Sound <small v-if="mixing">mixing…</small></h4>
     <label class="field-col">
       Music

@@ -43,7 +43,9 @@ export const DEFAULT_AUDIO: AudioConfig = {
 export type TtsProvider = 'none' | 'openai' | 'elevenlabs'
 export const TTS_PROVIDERS: TtsProvider[] = ['none', 'openai', 'elevenlabs']
 export type ContentLanguage = 'fr' | 'en'
+import type { ElevenSettings } from './profiles'
 export interface VoiceConfig {
+  settings?: Record<string,ElevenSettings>
   provider: TtsProvider
   language: ContentLanguage
   /** Provider voice id per role. */
