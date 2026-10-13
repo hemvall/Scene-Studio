@@ -27,6 +27,10 @@ describe('Lew facial mask', () => {
     buildLew(rig)
     for (const eye of rig.eyes) {
       expect(eye.group.scale.z).toBe(0.12)
+      expect(eye.lid.geometry.type).toBe('CircleGeometry')
+      expect(eye.lid.children).toHaveLength(0)
+      expect(eye.lid.material).toBeInstanceOf(T.MeshBasicMaterial)
+      expect(eye.lid.position.z).toBeGreaterThan(0.145 * 0.55)
       const normal = new T.Vector3(0, 0, 1).applyQuaternion(eye.group.quaternion)
       expect(Math.abs(normal.x)).toBeGreaterThan(0.1)
       expect(normal.z).toBeGreaterThan(0.5)

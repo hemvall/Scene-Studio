@@ -114,6 +114,11 @@ export function buildLew(rig: CharacterRig) {
     eye.group.scale.z = 0.12
     eye.lid.scale.y *= 0.45
     eye.lid.position.z = 0.088
+    // A flat, unoutlined lid gives a single clean edge. The inverted sphere hull
+    // previously showed through the white as a second dotted contour.
+    eye.lid.clear()
+    eye.lid.geometry = new T.CircleGeometry(1, 64)
+    eye.lid.material = new T.MeshBasicMaterial({ color: LEW_MASK, side: T.DoubleSide })
   }
   rig.mouth.position.set(0, 0.18, 0.6)
 }
