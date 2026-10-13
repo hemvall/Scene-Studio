@@ -7,6 +7,10 @@ import { EXAMPLE_REELS } from '@/studio/content/examples'
 import { OUTPUT_PRESETS } from '@/studio/render/presets'
 import { ENVIRONMENTS } from '@/studio/environments/catalog'
 import { PROJECT_STATUSES, type ContentProject, type ProjectStatus } from '@/studio/content/project'
+import { screenplayDialogue } from '@/studio/content/screenplay'
+import { CHARACTERS, CHARACTER_KINDS } from '@/studio/characters/catalog'
+import type { EnvironmentId } from '@/studio/scene/model'
+import type { CastMember } from '@/studio/content/project'
 import { parseScript } from '@/studio/content/script'
 import { projectDuration } from '@/studio/content/compile'
 const props = defineProps<{ studio: StudioDocument }>()
@@ -21,25 +25,35 @@ const keyOpen = ref(false)
 const scriptOpen = ref(false)
 const pastedScript = ref('')
 const scriptTitle = ref('')
-const scriptTemplate = ref('misconception')
+const scriptSet = ref<EnvironmentId>('office-night')
+const scriptCast = ref<CastMember[]>([{role:'lew',name:'Lew',kind:'lew'}])
+function detectCast() {
+  const imported = screenplayDialogue(pastedScript.value)
+  const names = imported.names.length ? imported.names : [...pastedScript.value.matchAll(/^([A-Z][A-Z _-]*)(?:\s*\([^)]*\))?:/gm)].map(m => m[1]!).filter(n => !['CAMERA','PAUSE'].includes(n))
+  scriptCast.value = [...new Set(names)].map(name => ({name,role:name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),kind: /lew/i.test(name) ? 'lew' : /dev|engineer/i.test(name) ? 'dev' : 'ceo'}))
+}
 const scriptError = ref('')
 function createFromScript() {
-  const template = TEMPLATES.find(t => t.id === scriptTemplate.value)!
-  const parsed = parseScript(pastedScript.value, template.cast)
-  if (!parsed.dialogue.length || parsed.warnings.length) {
+  const imported = screenplayDialogue(pastedScript.value)
+  const parsed = parseScript(imported.text, scriptCast.value)
+  if (!parsed.dialogue.length || !scriptCast.value.length) {
     scriptError.value = parsed.warnings.join(' · ') || 'Use character-labelled dialogue, e.g. LEW: "Your line."'
     return
   }
-  props.studio.newProject(template.id)
+  props.studio.newProject()
   props.studio.editProject(s => {
     s.setTitle(scriptTitle.value.trim() || 'My scripted reel')
+    s.setEnvironment(scriptSet.value)
+    s.project.cast = structuredClone(scriptCast.value.map(c => ({...c})))
+    s.project.metadata.notes = pastedScript.value
     s.project.hook = parsed.dialogue[0]!.text
     s.project.cta = ''
     s.project.topic = ''
     delete s.project.scripts
     delete s.project.duration
   })
-  props.studio.applyScriptText(pastedScript.value)
+  props.studio.applyScriptText(imported.text)
+  if (imported.storyboard) props.studio.message.value = 'Dialogue imported. Original screenplay saved in project notes. Screen montages, walking, title cards and music cuts still need staging; they were not automatically rendered.'
 }
 const voiceKeys = props.studio.audio.keys
 function moveVoiceKey() {
@@ -99,9 +113,11 @@ onBeforeUnmount(() => window.removeEventListener('pointerdown', outside))
         <header><h2 id="existing-script-title">From existing script</h2><button type="button" class="ghost" aria-label="Close script dialog" @click="scriptOpen = false"><Icon name="x" /></button></header>
         <p class="note">No Anthropic key needed. Paste dialogue, build the scene, then generate voices and render.</p>
         <label class="field-col">Reel title<input v-model="scriptTitle" aria-label="New reel title" placeholder="Name your reel" /></label>
-        <label class="field-col">Cast and set<select v-model="scriptTemplate" aria-label="Script cast and set"><option v-for="t in TEMPLATES" :key="t.id" :value="t.id">{{ t.name }} · {{ t.cast.map(c => c.name).join(' + ') }} · {{ ENVIRONMENTS[t.environment].name }}</option></select></label>
+        <label class="field-col">Set<select v-model="scriptSet" aria-label="Script set"><option v-for="env in Object.values(ENVIRONMENTS)" :key="env.id" :value="env.id">{{ env.name }}</option></select></label>
+        <div class="script-cast"><strong>Cast</strong><button type="button" class="ghost" @click="detectCast">Detect characters from script</button><button type="button" class="ghost" @click="scriptCast.push({role:'character-' + scriptCast.length,name:'Character ' + (scriptCast.length+1),kind:'dev'})">Add character</button></div>
+        <div v-for="(member,i) in scriptCast" :key="i" class="script-cast"><input v-model="member.name" :aria-label="'Script character ' + (i+1)" placeholder="Name in your script" @change="member.role = member.name.toLowerCase().replace(/[^a-z0-9]+/g,'-')"/><select v-model="member.kind" :aria-label="'Appearance of ' + member.name"><option v-for="kind in CHARACTER_KINDS" :key="kind" :value="kind">{{ CHARACTERS[kind].name }}</option></select><button type="button" class="ghost" :aria-label="'Remove ' + member.name" @click="scriptCast.splice(i,1)"><Icon name="x"/></button></div>
         <label class="field-col">Your script<textarea v-model="pastedScript" aria-label="Existing script" placeholder='CAMERA: two-shot Lew CEO&#10;CEO: "We already have ChatGPT."&#10;LEW (deadpan): "Congratulations."' spellcheck="false" /></label>
-        <p class="note">Use names from the selected cast: NAME: "Dialogue". CAMERA, PAUSE and [00:03] timing are optional. Change the cast or set later in the editor.</p>
+        <p class="note">Paste NAME: "Dialogue" or a Markdown screenplay with character headings and quoted lines. Detect characters, choose their appearances and select your set. The full source is kept in project notes; screen montages, walking and title cards require staging.</p>
         <p v-if="scriptError" role="alert">{{ scriptError }}</p>
         <footer><span class="dim">Script → Scene → Voice → MP4</span><button type="submit" class="primary" :disabled="!pastedScript.trim()">Build scene</button></footer>
       </form>
