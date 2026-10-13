@@ -1,3 +1,4 @@
+import { headerApiKey } from './key'
 import type { CharacterKind } from '../scene/model'
 import { envelopeOf, VOICE_TAIL, type ContentLanguage, type LineAudio, type TtsProvider } from './plan'
 import { decodeClip, forgetDecoded, hasClip, putClip, sha256 } from './store'
@@ -57,14 +58,14 @@ async function fetchBytes(r: TtsRequest, signal?: AbortSignal): Promise<ArrayBuf
     response = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       signal,
-      headers: { Authorization: `Bearer ${r.apiKey}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${headerApiKey(r.apiKey)}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: r.model, voice: r.voice, input: r.text, response_format: 'mp3', ...(r.instructions && { instructions: r.instructions }) })
     })
   } else if (r.provider === 'elevenlabs') {
     response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(r.voice)}?output_format=mp3_44100_128`, {
       method: 'POST',
       signal,
-      headers: { 'xi-api-key': r.apiKey, 'Content-Type': 'application/json' },
+      headers: { 'xi-api-key': headerApiKey(r.apiKey), 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: r.text, model_id: r.model, voice_settings: r.voiceSettings })
     })
   } else throw new Error('No voice provider selected')
