@@ -1,6 +1,7 @@
 import * as T from 'three'
 import { CharacterRig } from './rig'
 import { outline, toonGradient } from '../engine/toon'
+import { raccoonMaskGeometry } from './raccoonMask'
 /**
  * Lew: the brand character, a low-poly raccoon. What must read at reel scale and
  * as a flat icon: the black eye mask with half-lidded eyes, the pointed ears, the
@@ -69,13 +70,14 @@ export function buildLew(rig: CharacterRig) {
     armRest: [0.3, -0.3],
     mouthWidth: 0.07
   }
-  // Head: a wide ball, the mask as a band plus two lobes that sweep down and out, a forehead stripe.
-  poly(rig.head, [0, 0.42, 0], [0.6, 0.5, 0.54], coat)
-  poly(rig.head, [0, 0.5, 0.36], [0.5, 0.17, 0.22], mask, false)
-  for (const side of [-1, 1]) {
-    const lobe = poly(rig.head, [side * 0.43, 0.42, 0.2], [0.2, 0.15, 0.2], mask, false)
-    lobe.rotation.z = side * 0.5
-  }
+  // The mask follows the same facets as the head, including its side curvature.
+  const head = poly(rig.head, [0, 0.42, 0], [0.6, 0.5, 0.54], coat)
+  const band = new T.Mesh(raccoonMaskGeometry(head.geometry), mask)
+  band.name = 'lew-mask'
+  band.position.copy(head.position)
+  band.scale.copy(head.scale)
+  band.castShadow = false
+  rig.head.add(band)
   poly(rig.head, [0, 0.7, 0.42], [0.05, 0.09, 0.07], mask, false)
   // Muzzle: pale, tiny, with a black nose.
   poly(rig.head, [0, 0.27, 0.49], [0.17, 0.12, 0.14], pale, false)
@@ -98,7 +100,11 @@ export function buildLew(rig: CharacterRig) {
     ear.add(inner)
   }
   // Eyes sit on the mask; their lids are mask-coloured so a half-lid reads as the mask's edge.
-  rig.addEye([-0.22, 0.5, 0.47], 0.145, 0.85, mask, '#f5f4f0')
-  rig.addEye([0.22, 0.5, 0.47], 0.145, 0.85, mask, '#f5f4f0')
+  for (const side of [-1, 1]) {
+    const eye = rig.addEye([side * 0.22, 0.5, 0.535], 0.145, 0.85, mask, '#f5f4f0')
+    // Keep the upper lid on the eye surface, without a second oversized mask lobe.
+    eye.lid.scale.y *= 0.45
+    eye.lid.position.z = 0.088
+  }
   rig.mouth.position.set(0, 0.18, 0.6)
 }
