@@ -321,7 +321,7 @@ export class SceneEngine {
       frame: (time: number, target: CanvasRenderingContext2D) => {
         this.renderFrame(time)
         target.drawImage(source, 0, 0, width, height)
-        drawOverlay(target, this.scene, time, width, height, false)
+        drawOverlay(target, this.scene, time, width, height, false, { clear: false })
       },
       end: () => {
         this.capturing = false

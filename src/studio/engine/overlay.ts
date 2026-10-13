@@ -12,9 +12,11 @@ export function drawOverlay(
   time: number,
   width: number,
   height: number,
-  editor = false
+  editor = false,
+  options: { clear?: boolean } = {}
 ) {
-  ctx.clearRect(0, 0, width, height)
+  // Preview owns a separate transparent layer; export already contains the 3D image.
+  if (options.clear !== false) ctx.clearRect(0, 0, width, height)
   if (editor && height > width) {
     // Keep-out bands of the typical vertical-video UI.
     ctx.fillStyle = 'rgba(255,255,255,0.05)'
