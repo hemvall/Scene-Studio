@@ -17,6 +17,12 @@ const layout = ref<'grid' | 'list'>('grid')
 const brief = ref('')
 const menu = ref(false)
 const keyOpen = ref(false)
+const voiceKeys = props.studio.audio.keys
+function moveVoiceKey() {
+  voiceKeys.value.elevenlabs = claude.value.apiKey.trim()
+  claude.value.apiKey = ''
+  message.value = 'Key moved to ElevenLabs voice settings. Open your reel → Script → Voice → ElevenLabs → Generate voices.'
+}
 const EXAMPLES = [
   'A 20-second Reel: a CEO asks Lew why they need an agent when they already have ChatGPT. Office at night, two-shot then close-ups, funny but accurate.',
   'Explain why "putting our docs in a vector database" is not RAG. Lew alone in the lab, 25 seconds, one punchline.',
@@ -49,6 +55,11 @@ function seconds(p: ContentProject) {
 function submit() {
   const text = brief.value.trim()
   if (!text) return
+  if (!claude.value.apiKey.trim().startsWith('sk-ant-')) {
+    keyOpen.value = true
+    message.value = 'Generate needs an Anthropic script key. Use the ElevenLabs field for voice keys.'
+    return
+  }
   props.studio.generate(text)
 }
 function outside(ev: PointerEvent) {
@@ -82,16 +93,29 @@ onBeforeUnmount(() => window.removeEventListener('pointerdown', outside))
       <button v-else type="submit" class="primary" :disabled="!brief.trim() || !canGenerate" :title="canGenerate ? 'Generate a project with Claude' : 'Needs an Anthropic API key'">
         <Icon name="sparkle" /> Generate
       </button>
-      <button type="button" class="ghost icon-only" title="API key" :aria-expanded="keyOpen" @click="keyOpen = !keyOpen"><Icon name="settings" /></button>
+      <button type="button" class="ghost icon-only" title="Provider settings" aria-label="Provider settings" :aria-expanded="keyOpen" @click="keyOpen = !keyOpen"><Icon name="settings" /></button>
     </form>
-    <div v-if="keyOpen" class="key-panel">
-      <label class="field-col">
-        Anthropic API key
-        <input v-model="claude.apiKey" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false" />
-      </label>
-      <p class="note">The key stays in this browser and goes only to api.anthropic.com. Generation writes the project in English with a French script behind it; the compiler builds the timeline from it, exactly as for a hand-written script. Without a key, start from a template.</p>
-    </div>
-    <p v-else-if="!canGenerate" class="note command-note">No API key: the brief cannot be generated. Templates below work offline; the key goes in the settings icon.</p>
+    <section v-if="keyOpen" class="key-panel provider-settings" aria-label="Provider settings">
+      <h2>Provider settings</h2>
+      <p class="note">Script generation and character voices use separate providers and keys.</p>
+      <div class="provider-fields">
+        <label class="field-col">ElevenLabs API key · character voices
+          <input v-model="voiceKeys.elevenlabs" aria-label="ElevenLabs voice API key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your ElevenLabs key" />
+          <small>Used only for voices. Sent only to api.elevenlabs.io.</small>
+        </label>
+        <label class="field-col">OpenAI API key · character voices
+          <input v-model="voiceKeys.openai" aria-label="OpenAI voice API key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your OpenAI key" />
+          <small>Used only for voices. Sent only to api.openai.com.</small>
+        </label>
+        <label class="field-col">Anthropic API key · script generation (optional)
+          <input v-model="claude.apiKey" aria-label="Anthropic script API key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…" />
+          <small>Used by Generate above, not for voices. Sent only to api.anthropic.com.</small>
+        </label>
+      </div>
+      <p v-if="claude.apiKey && !claude.apiKey.trim().startsWith('sk-ant-')" class="note">This does not look like an Anthropic key. If you pasted your ElevenLabs key here, <button type="button" class="ghost" @click="moveVoiceKey">Move this key to ElevenLabs</button></p>
+      <p class="note">Keys are saved in this browser. To add speech and lip sync: open a reel → Script → Voice, select ElevenLabs or OpenAI, then Generate voices. Anthropic is not required for voice generation.</p>
+    </section>
+    <p v-else-if="!canGenerate" class="note command-note">Generate needs an Anthropic script key. For speech, configure ElevenLabs in Provider settings; templates work without a script key.</p>
     <div v-if="generating" class="generating"><span /><span /><span /> Writing the project…</div>
     <p v-if="message" class="library-message">{{ message }}</p>
     <div v-if="!projects.length || projects.every((p) => !p.dialogue.length)" class="examples">
