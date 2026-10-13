@@ -14,10 +14,29 @@ describe('Lew facial mask', () => {
       for (const yaw of [-0.45, 0, 0.45]) {
         const direction = new T.Vector3(Math.sin(yaw), 0, Math.cos(yaw))
         const ray = new T.Raycaster(center.clone().addScaledVector(direction, 2), direction.clone().negate())
-        const hits = ray.intersectObject(rig.head, true)
+        // Mouth primitives are unposed here; animation scales them before rendering.
+        const hits = ray.intersectObjects(rig.head.children.filter(child => child !== rig.mouth), true)
         expect(hits.length).toBeGreaterThan(0)
         expect(hits[0]!.object === eye.pupil || hits[0]!.object.parent === eye.pupil).toBe(true)
       }
+    }
+    rig.dispose()
+  })
+  it('seats shallow eyes against the head rather than floating goggles', () => {
+    const rig = new CharacterRig(data)
+    buildLew(rig)
+    for (const eye of rig.eyes) {
+      expect(eye.group.scale.z).toBe(0.12)
+      expect(eye.lid.geometry.type).toBe('CircleGeometry')
+      expect(eye.lid.children).toHaveLength(0)
+      expect(eye.lid.material).toBeInstanceOf(T.MeshBasicMaterial)
+      expect(eye.lid.position.z).toBeGreaterThan(0.145 * 0.55)
+      const normal = new T.Vector3(0, 0, 1).applyQuaternion(eye.group.quaternion)
+      expect(Math.abs(normal.x)).toBeGreaterThan(0.1)
+      expect(normal.z).toBeGreaterThan(0.5)
+      expect(eye.group.position.z).toBeLessThan(0.535)
+      const bounds = new T.Box3().setFromObject(eye.group)
+      expect(bounds.max.z - bounds.min.z).toBeLessThan(0.18)
     }
     rig.dispose()
   })
