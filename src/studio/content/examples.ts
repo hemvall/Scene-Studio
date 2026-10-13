@@ -17,12 +17,48 @@ export interface ExampleReel {
   environment: ContentProject['environment']
   cast: CastMember[]
   tags: string[]
+  duration?: number
+  notes?: string
   script: Record<ContentLanguage, string>
 }
 const lew = (mark: string): CastMember => ({ role: 'lew', kind: 'lew', name: 'Lew', mark })
 const ceo = (mark: string, name = 'CEO', role = 'ceo'): CastMember => ({ role, kind: 'ceo', name, mark })
 const dev = (mark: string, name = 'Dev', role = 'dev'): CastMember => ({ role, kind: 'dev', name, mark })
 export const EXAMPLE_REELS: ExampleReel[] = [
+  {
+  "id": "we-already-have-chatgpt",
+  "title": "We already have ChatGPT",
+  "topic": "ChatGPT versus an agent connected to your business systems",
+  "hook": "Why would we need an AI agent? We already have ChatGPT.",
+  "cta": "LEW — Agents that work.",
+  "template": "misconception",
+  "environment": "meeting-room",
+  "cast": [
+    {
+      "role": "lew",
+      "kind": "lew",
+      "name": "Lew",
+      "mark": "head"
+    },
+    {
+      "role": "ceo",
+      "kind": "ceo",
+      "name": "CEO",
+      "mark": "left"
+    }
+  ],
+  "tags": [
+    "agents",
+    "business",
+    "humour"
+  ],
+  "duration": 24,
+  "notes": "Video 3. English dialogue. Signature silence 13–16s: eyes to camera, then slow head turn. Final 20–23s laptop notification: Agent completed / CRM updated / Follow-up sent / Meeting scheduled. Lew picks up coffee and drinks calmly. Cut at 23s to LEW / Agents that work. until 24s. These exact drink animation, eye-before-head motion, timed notification and full-screen end card are storyboard directions; the current engine does not animate those custom beats.",
+  "script": {
+    "en": "[00:00]\nCAMERA: two-shot Lew CEO\nLew goes deadpan.\nCEO (neutral, 1.5s): \"Why would we need an AI agent?\"\n[00:01.7]\nCAMERA: close-up Lew\nCEO (neutral, 1.2s): \"We already have ChatGPT.\"\n[00:02.9]\nLew looks at CEO.\nLew blinks.\n[00:03]\nLEW (deadpan, 0.35s): \"Okay.\"\n[00:03.4]\nLew leans forward.\nLEW (deadpan, 1.7s): \"Does it know what's happening in your CRM?\"\n[00:05.1]\nCEO (neutral, 0.3s): \"No.\"\n[00:05.4]\nLEW (deadpan, 0.4s): \"Your emails?\"\n[00:05.8]\nCEO (neutral, 0.3s): \"No.\"\n[00:06.2]\nCAMERA: close-up Lew slow-push\nLEW (deadpan, 0.7s): \"Support tickets?\"\n[00:07]\nCEO (neutral, 0.5s): \"…no.\"\n[00:08]\nLEW (deadpan, 1.1s): \"Can it update the CRM?\"\n[00:09.2]\nCEO (neutral, 0.4s): \"No.\"\n[00:10]\nCAMERA: two-shot Lew CEO\nLew looks at CEO.\nCEO looks at Lew.\n[00:10.4]\nLew looks at laptop.\n[00:10.8]\nLew looks at CEO.\nLEW (deadpan, 1.5s): \"Can it do anything without you?\"\n[00:12.5]\nCEO (neutral, 0.5s): \"…no.\"\n[00:13]\nCAMERA: close-up Lew slow-push\nLew looks at CEO.\n[00:13.7]\nLew looks at camera.\n[00:16]\nCAMERA: two-shot Lew CEO\nLew looks at CEO.\nLEW (deadpan, 1.2s): \"Then you have ChatGPT.\"\n[00:17.3]\nCEO nods.\n[00:17.7]\nLEW (deadpan, 0.8s): \"Congratulations.\"\n[00:19]\nCEO (confused, 0.7s): \"...thanks?\"\n[00:20]\nCAMERA: over-shoulder Lew CEO\nCEO looks at laptop.\nLew looks at coffee.\n[00:21.5]\nCEO looks at Lew.\n[00:22.3]\nCEO (neutral, 0.7s): \"…okay.\"\n[00:23]\nPAUSE 1\n",
+    "fr": "[00:00]\nCAMERA: two-shot Lew CEO\nLew goes deadpan.\nCEO (neutral, 1.5s): \"Pourquoi aurait-on besoin d'un agent IA ?\"\n[00:01.7]\nCAMERA: close-up Lew\nCEO (neutral, 1.2s): \"On a déjà ChatGPT.\"\n[00:02.9]\nLew looks at CEO.\nLew blinks.\n[00:03]\nLEW (deadpan, 0.35s): \"D'accord.\"\n[00:03.4]\nLew leans forward.\nLEW (deadpan, 1.7s): \"Il sait ce qui se passe dans votre CRM ?\"\n[00:05.1]\nCEO (neutral, 0.3s): \"Non.\"\n[00:05.4]\nLEW (deadpan, 0.4s): \"Vos emails ?\"\n[00:05.8]\nCEO (neutral, 0.3s): \"Non.\"\n[00:06.2]\nCAMERA: close-up Lew slow-push\nLEW (deadpan, 0.7s): \"Les tickets support ?\"\n[00:07]\nCEO (neutral, 0.5s): \"…non.\"\n[00:08]\nLEW (deadpan, 1.1s): \"Il peut mettre à jour le CRM ?\"\n[00:09.2]\nCEO (neutral, 0.4s): \"Non.\"\n[00:10]\nCAMERA: two-shot Lew CEO\nLew looks at CEO.\nCEO looks at Lew.\n[00:10.4]\nLew looks at laptop.\n[00:10.8]\nLew looks at CEO.\nLEW (deadpan, 1.5s): \"Il peut faire quelque chose sans vous ?\"\n[00:12.5]\nCEO (neutral, 0.5s): \"…non.\"\n[00:13]\nCAMERA: close-up Lew slow-push\nLew looks at CEO.\n[00:13.7]\nLew looks at camera.\n[00:16]\nCAMERA: two-shot Lew CEO\nLew looks at CEO.\nLEW (deadpan, 1.2s): \"Alors vous avez ChatGPT.\"\n[00:17.3]\nCEO nods.\n[00:17.7]\nLEW (deadpan, 0.8s): \"Félicitations.\"\n[00:19]\nCEO (confused, 0.7s): \"...merci ?\"\n[00:20]\nCAMERA: over-shoulder Lew CEO\nCEO looks at laptop.\nLew looks at coffee.\n[00:21.5]\nCEO looks at Lew.\n[00:22.3]\nCEO (neutral, 0.7s): \"…d'accord.\"\n[00:23]\nPAUSE 1\n"
+  }
+},
   {
     id: 'rag-vector-db',
     title: 'RAG is not a vector database',
@@ -438,6 +474,8 @@ export function buildExample(reel: ExampleReel, now = '2026-10-12T00:00:00.000Z'
   studio.setScript(reel.script[language])
   studio.setAltScript(other, reel.script[other])
   studio.project.metadata.tags = [...reel.tags, 'example']
+  if (reel.duration) studio.project.duration = reel.duration
+  if (reel.notes) studio.project.metadata.notes = reel.notes
   studio.compileTimeline()
   return studio.project
 }
