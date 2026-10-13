@@ -14,6 +14,10 @@ import { cameraAt } from '@/studio/timeline/evaluate'
 import { OUTPUT_FORMATS, OUTPUT_PRESETS } from '@/studio/render/presets'
 const studio = useStudioDocument()
 const { project, scene, view, time, playing, fps, ms, message, jsonOpen, json, exporting, panel, leftPanel } = studio
+async function generateSpeech() {
+  if (project.value.voice.provider === 'none') studio.editProject(s => s.setVoice({provider:'elevenlabs',model:'eleven_multilingual_v2'}))
+  await studio.audio.generateVoices()
+}
 const exportOpen = ref(false)
 const focusView = ref(false)
 const clock = computed(() => {
@@ -57,6 +61,7 @@ const exportPercent = computed(() => (exporting.value.total ? Math.round((export
         <button class="ghost icon-only" :title="studio.audio.muted.value ? 'Unmute' : 'Mute preview audio'" :aria-pressed="studio.audio.muted.value" @click="studio.audio.toggleMute()">
           <Icon :name="studio.audio.muted.value ? 'mute' : studio.audio.mixing.value ? 'mixing' : 'sound'" />
         </button>
+        <button class="ghost" :disabled="studio.audio.voiceProgress.value.running" @click="generateSpeech"><Icon name="mic"/> {{ studio.audio.voiceProgress.value.running ? 'Generating voices…' : studio.audio.voicedLines.value ? 'Voices ready' : 'Generate voices' }}</button>
         <button class="ghost focus-toggle" :aria-pressed="focusView" @click="focusView = !focusView"><Icon name="scene" /> {{ focusView ? 'Show panels' : 'Focus view' }}</button>
         <button class="ghost" title="Rebuild the timeline from the script" @click="studio.compile()"><Icon name="refresh" /> Compile</button>
         <div class="menu" @click.stop>

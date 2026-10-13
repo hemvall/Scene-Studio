@@ -106,6 +106,15 @@ export function validateScene(input: unknown): SceneData {
   one(s.aspect, ASPECTS, 'aspect')
   camera(s.camera)
   subtitles(s.subtitles)
+  if (s.inserts !== undefined) for (const value of list(s.inserts, 100, 'storyboard inserts')) {
+    const insert = record(value, 'storyboard insert')
+    const start = number(insert.start, 0, duration, 'insert start')
+    const end = number(insert.end, 0, duration, 'insert end')
+    if (end <= start) throw new Error('Storyboard insert must have positive duration')
+    one(insert.kind, ['screen','card','label'] as const, 'insert kind')
+    text(insert.title, 'insert title', 300, true)
+    text(insert.text, 'insert text', 20000, true)
+  }
   const env = record(s.environment, 'environment')
   const envId = one(env.id, ENVIRONMENT_IDS, 'environment')
   number(env.fog, 0, 0.2, 'fog')

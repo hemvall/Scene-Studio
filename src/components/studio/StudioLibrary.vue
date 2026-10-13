@@ -45,7 +45,7 @@ function createFromScript() {
   const title = scriptTitle.value.trim() || pastedScript.value.match(/^#\s+(.+)$/m)?.[1] || 'My scripted reel'
   const ok = props.studio.newFromScript(imported.text, scriptCast.value.map(c => ({...c})), scriptSet.value, title, pastedScript.value)
   if (!ok) { scriptError.value = props.studio.message.value; return }
-  if (imported.storyboard) props.studio.message.value = 'Dialogue imported. Original screenplay saved in project notes. Screen montages, walking, title cards and music cuts still need staging; they were not automatically rendered.'
+  if (imported.storyboard) props.studio.message.value = 'Storyboard imported: dialogue, timed engineering screens and end card. Generate voices in Script → Voice for speech. Walking still needs staging.'
 }
 const voiceKeys = props.studio.audio.keys
 function moveVoiceKey() {
@@ -109,7 +109,7 @@ onBeforeUnmount(() => window.removeEventListener('pointerdown', outside))
         <div class="script-cast"><strong>Cast</strong><button type="button" class="ghost" @click="detectCast">Detect characters from script</button><button type="button" class="ghost" @click="scriptCast.push({role:'character-' + scriptCast.length,name:'Character ' + (scriptCast.length+1),kind:'dev'})">Add character</button></div>
         <div v-for="(member,i) in scriptCast" :key="i" class="script-cast"><input v-model="member.name" :aria-label="'Script character ' + (i+1)" placeholder="Name in your script" @change="member.role = member.name.toLowerCase().replace(/[^a-z0-9]+/g,'-')"/><select v-model="member.kind" :aria-label="'Appearance of ' + member.name"><option v-for="kind in CHARACTER_KINDS" :key="kind" :value="kind">{{ CHARACTERS[kind].name }}</option></select><button type="button" class="ghost" :aria-label="'Remove ' + member.name" @click="scriptCast.splice(i,1)"><Icon name="x"/></button></div>
         <label class="field-col">Your script<textarea v-model="pastedScript" aria-label="Existing script" placeholder='CAMERA: two-shot Lew CEO&#10;CEO: "We already have ChatGPT."&#10;LEW (deadpan): "Congratulations."' spellcheck="false" /></label>
-        <p class="note">Paste NAME: "Dialogue" or a Markdown screenplay with character headings and quoted lines. Detect characters, choose their appearances and select your set. The full source is kept in project notes; screen montages, walking and title cards require staging.</p>
+        <p class="note">Paste NAME: "Dialogue" or a Markdown screenplay with character headings and quoted lines. Detect characters, choose their appearances and select your set. The full source is kept in project notes; code-block screen montages and end cards are timed automatically; walking still requires staging.</p>
         <p v-if="scriptError" role="alert">{{ scriptError }}</p>
         <footer><span class="dim">Script → Scene → Voice → MP4</span><button type="submit" class="primary" :disabled="!pastedScript.trim()">Build scene</button></footer>
       </form>

@@ -1,6 +1,8 @@
 import { validateScene } from '@/studio/serialization/scene'
 import { projectFromScene, serializeProject, validateProject, type ContentProject } from '@/studio/content/project'
 import { ENVIRONMENTS } from '@/studio/environments/catalog'
+import { ContentStudio } from '@/studio/content/api'
+import { screenplayDialogue } from '@/studio/content/screenplay'
 import { exampleProjects } from '@/studio/content/examples'
 /** Browser storage of the content library: a list of projects, validated on the way in. */
 const KEY = 'scene-studio-library-v1'
@@ -23,6 +25,11 @@ export function loadLibrary(): { projects: ContentProject[]; active: string } {
                   Object.assign(prop, structuredClone(replacement));
                 }
               }
+            }
+            if (!project.scene.inserts?.length && project.metadata.notes && /```/.test(project.metadata.notes) && screenplayDialogue(project.metadata.notes).storyboard && !project.dialogue.some(d=>d.audio)) {
+              const imported = new ContentStudio(project)
+              imported.setScript(screenplayDialogue(project.metadata.notes).text)
+              imported.compileTimeline()
             }
             return project
           } catch {

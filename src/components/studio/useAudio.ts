@@ -6,6 +6,7 @@ import { decodeClip } from '@/studio/audio/store'
 import { AudioPreview } from '@/studio/audio/player'
 import { DEFAULT_MODELS, importMusic, storeTrack, synthesizeLine, VOICE_DEFAULTS } from '@/studio/audio/tts'
 import { archiveCredit, archiveFiles, fetchTrack, libraryTrack, searchArchive, type ArchiveFile, type ArchiveItem } from '@/studio/audio/library'
+import { availableElevenVoices } from '@/studio/audio/voices'
 import { ContentStudio } from '@/studio/content/api'
 /** Provider keys live in the browser, next to the Anthropic key. */
 const KEYS = 'scene-studio-audio-keys'
@@ -130,11 +131,19 @@ export function useAudio(project: Ref<ContentProject>, editProject: (fn: (studio
     voiceProgress.value = { running: true, done: 0, total: lines.length, current: '' }
     const model = p.voice.model || DEFAULT_MODELS[p.voice.provider]
     try {
+      const resolvedVoices = {...p.voice.voices}
+      if (p.voice.provider === 'elevenlabs' && p.cast.some(m=>!resolvedVoices[m.role])) {
+        voiceProgress.value = {...voiceProgress.value,current:'Loading available voices…'}
+        const voices=await availableElevenVoices(providerKey.value,voiceAbort.signal)
+        if(project.value.id!==p.id) return
+        p.cast.forEach((m,i)=>{if(!resolvedVoices[m.role]) resolvedVoices[m.role]=voices[i%voices.length]!})
+        editProject(s=>s.setVoice({voices:resolvedVoices}))
+      }
       for (const line of lines) {
         const member = p.cast.find((c) => c.role === line.speaker)
         if (!member) continue
         const defaults = VOICE_DEFAULTS[member.kind]
-        const voice = p.voice.voices[member.role] || (p.voice.provider === 'openai' ? defaults.openai : '')
+        const voice = resolvedVoices[member.role] || (p.voice.provider === 'openai' ? defaults.openai : '')
         if (!voice) throw new Error(`No voice id for ${member.name} (ElevenLabs needs one per role).`)
         voiceProgress.value = { ...voiceProgress.value, current: `${member.name}: ${line.text.slice(0, 40)}` }
         const audio = await synthesizeLine(

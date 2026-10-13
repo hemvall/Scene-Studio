@@ -8,6 +8,9 @@ import { OUTPUT_PRESETS } from '../render/presets'
 import { shotPoses, SHOT_LABELS } from '../camera/shots'
 import { subjectOf, eyeHeight } from '../timeline/evaluate'
 import { ACTING } from './acting'
+import { screenplayDialogue } from './screenplay'
+import { parseScript } from './script'
+import { storyboardInserts } from './storyboard'
 import { conversationBeats } from './conversation'
 import type { ContentProject, Shot } from './project'
 export interface CompileResult {
@@ -40,7 +43,18 @@ export function compileProject(project: ContentProject): CompileResult {
   const scene = emptyScene(project.title, project.environment)
   scene.aspect = preset.aspect
   scene.fps = preset.fps
-  scene.duration = projectDuration(project)
+  scene.inserts = storyboardInserts(project.metadata.notes)
+  if (project.dialogue.some(d=>d.audio) && scene.inserts.length) {
+    const original=parseScript(screenplayDialogue(project.metadata.notes).text,project.cast).dialogue
+    const retime=(time:number)=>{
+      let index=-1
+      original.forEach((d,i)=>{if(d.start+d.duration<=time) index=i})
+      const before=original[index],after=project.dialogue[index]
+      return before && after ? Math.max(0,time+(after.start+after.duration)-(before.start+before.duration)) : time
+    }
+    scene.inserts=scene.inserts.map(i=>({...i,start:retime(i.start),end:retime(i.end)}))
+  }
+  scene.duration = Math.max(projectDuration(project),...scene.inserts.map(i=>i.end))
   scene.subtitles = structuredClone(project.scene.subtitles)
   const c = new SceneCommands(scene)
   for (const prop of [...env.dressing, ...project.props]) c.addProp(prop.kind, prop)

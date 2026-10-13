@@ -128,7 +128,9 @@ export type TimelineEvent =
     })
   | (EventBase & { type: 'action'; character: string; action: ActionId })
 export type EventType = TimelineEvent['type']
+export interface StoryboardInsert {start:number;end:number;kind:'screen'|'card'|'label';title:string;text:string}
 export interface SceneData {
+  inserts?: StoryboardInsert[]
   version: 3
   name: string
   duration: number
