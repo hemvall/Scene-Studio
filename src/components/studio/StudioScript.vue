@@ -34,6 +34,15 @@ function num(ev: Event) {
 function voiceOf(role: string, kind: CharacterKind) {
   return project.value.voice.voices[role] || (project.value.voice.provider === 'openai' ? VOICE_DEFAULTS[kind].openai : '')
 }
+// Editing state is independent of the viewport's per-frame rerenders.
+const voiceDrafts = ref<Record<string,string>>({})
+watch(() => JSON.stringify([project.value.id, project.value.voice.provider, project.value.voice.voices, project.value.cast]), () => {
+  voiceDrafts.value = Object.fromEntries(project.value.cast.map(m => [m.role, voiceOf(m.role,m.kind)]))
+}, {immediate:true})
+function saveVoice(role:string, ev:Event) {
+  const value=(ev.target as HTMLInputElement).value.trim()
+  props.studio.editProject(s=>s.setVoice({voices:{[role]:value}}))
+}
 function instructionsOf(role: string, kind: CharacterKind) {
   return project.value.voice.instructions[role] ?? VOICE_DEFAULTS[kind].instructions[project.value.voice.language]
 }
@@ -182,12 +191,12 @@ function kindLabel(kind: CharacterKind) {
         <span class="dot" :style="{ background: CHARACTERS[m.kind].color }" />
         <span class="voice-name">{{ m.name }}</span>
         <input
-          :value="voiceOf(m.role, m.kind)"
+          v-model="voiceDrafts[m.role]"
           :list="project.voice.provider === 'openai' ? 'openai-voices' : undefined"
           :placeholder="project.voice.provider === 'openai' ? 'voice' : 'voice id'"
           spellcheck="false"
           :aria-label="`Voice of ${m.name}`"
-          @change="studio.editProject((s) => s.setVoice({ voices: { [m.role]: ($event.target as HTMLInputElement).value.trim() } }))"
+          @input="saveVoice(m.role, $event)"
         />
         <input
           v-if="project.voice.provider === 'openai'"
