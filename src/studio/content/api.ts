@@ -39,6 +39,8 @@ export class ContentStudio {
     studio.project.metadata.tags = [...template.tags]
     const language = studio.project.voice.language
     studio.setScript(template.script[language])
+    studio.project.hook = studio.project.dialogue[0]?.text ?? ''
+    studio.project.cta = template.cta[language]
     studio.setAltScript(language === 'en' ? 'fr' : 'en', template.script[language === 'en' ? 'fr' : 'en'])
     studio.compileTimeline()
     return studio

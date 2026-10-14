@@ -1,9 +1,11 @@
 import type { ActionId, Expression, SceneData } from '../scene/model'
 import { CHARACTERS, CHARACTER_KINDS } from '../characters/catalog'
 import { ENVIRONMENTS } from '../environments/catalog'
-import { readingTime } from '../timeline/evaluate'
+import { readingTime, subjectOf } from '../timeline/evaluate'
+import { shotPoses } from '../camera/shots'
+import { parseScript } from '../content/script'
 import { PRESET_NAMES, type PresetName } from '../camera/presets'
-import type { DirectorOp, DirectorScript } from './script'
+import { applyScript, type DirectorOp, type DirectorScript } from './script'
 /**
  * Offline director: a small rule-based reading of English stage directions.
  * It covers the common shapes ("Kit looks at the window", "after two seconds
@@ -49,7 +51,7 @@ function seconds(text: string): number | undefined {
 }
 function splitSentences(text: string) {
   return text
-    .replace(/\s+/g, ' ')
+    .replace(/[^\S\r\n]+/g, ' ')
     .split(/(?<=[.!?]["”']?)\s+|\s*;\s*|\s+then\s+|\n+/i)
     .map((s) => s.trim())
     .filter(Boolean)
@@ -83,6 +85,12 @@ export function localDirector(text: string, scene: SceneData): DirectorScript {
   const ctx: Ctx = { scene, cursor: 0, ops: [], notes: [] }
   for (const sentence of splitSentences(text)) {
     const lower = sentence.toLowerCase()
+    // Silent beats advance the timeline without adding a spoken line.
+    const pause = lower.match(/^pause\s+(\d+(?:\.\d+)?)(?:\s*(?:s|seconds?))?$/)
+    if (pause) {
+      ctx.cursor += Number(pause[1])
+      continue
+    }
     const explicit = seconds(lower)
     let time = explicit ?? ctx.cursor
     if (explicit !== undefined && /\bafter\b/.test(lower)) time = ctx.cursor + explicit
@@ -130,8 +138,29 @@ export function localDirector(text: string, scene: SceneData): DirectorScript {
       const id = findCharacter(ctx, removal[2]!)
       if (id && ctx.scene.characters.some((c) => c.id === id)) ctx.ops.push({ op: 'removeCharacter', character: id }), (handled = true)
     }
-    // Camera.
-    if (/\b(camera|shot|close[- ]?up|wide|zoom|push|pull|profile|over[- ]the[- ]shoulder)\b/.test(lower)) {
+    // Explicit CAMERA lines share the content parser and aspect-aware shot geometry.
+    // Keep natural-language preset operations compatible with older director scripts.
+    if (/^camera\s*:|\btwo[- ]shot\b|\bover[- ]shoulder\b|\b(slow-push|slow-pan|push-in|pull-out)\b/.test(lower)) {
+      // Replay preceding operations through the same commands as the final
+      // script, so aspect, casting and environment seat changes all agree.
+      const effective = applyScript(scene, { reply: '', ops: ctx.ops }, () => structuredClone(scene)).scene
+      const cast = effective.characters.map(c => ({ role: c.id, name: c.name, kind: c.kind }))
+      const shot = parseScript(`CAMERA: ${sentence.replace(/^camera\s*:\s*/i, '')}`, cast).shots[0]
+      const target = shot && effective.characters.find(c => c.id === shot.target)
+      if (shot && target) {
+        const other = effective.characters.find(c => c.id === shot.other) ?? effective.characters.find(c => c.id !== target.id)
+        const poses = shotPoses(shot.type, shot.movement, {
+          target: subjectOf(effective, target, time), other: other && subjectOf(effective, other, time), front: ENVIRONMENTS[effective.environment.id].camera.position
+        }, effective.aspect)
+        ctx.ops.push({ op: 'camera', time, pose: poses.start, cut: true })
+        if (poses.end) {
+          const duration = Number(lower.match(/\bfor\s+(\d+(?:\.\d+)?)\s*(?:s|seconds?)\b/)?.[1] ?? 2)
+          ctx.ops.push({ op: 'camera', time: time + Math.max(0.1, duration), pose: poses.end, cut: false })
+        }
+        handled = true
+      }
+    }
+    if (!handled && /\b(camera|shot|close[- ]?up|wide|zoom|push|pull|profile|over[- ]the[- ]shoulder)\b/.test(lower)) {
       const preset = PRESET_WORDS.find(([re]) => re.test(lower))?.[1]
       if (preset) {
         const subject = findCharacter(ctx, sentence.replace(/\bcamera\b/i, ''))
@@ -151,7 +180,10 @@ export function localDirector(text: string, scene: SceneData): DirectorScript {
     }
     // Gaze.
     if (who && /\b(looks?|glances?|stares?|turns? to|faces?|watch(es)?|eyes)\b/.test(lower) && !/\bcamera (push|pull|move)/.test(lower)) {
-      const target = gazeTarget(ctx, sentence)
+      const character = ctx.scene.characters.find(c => c.id === who)
+      const target = /\b(?:looks?|glances?|turns?)\s+away\b/.test(lower) && character
+        ? [character.position[0] + 2, CHARACTERS[character.kind].eyeHeight + character.position[1], character.position[2] - 1] as [number, number, number]
+        : gazeTarget(ctx, sentence)
       if (target) {
         ctx.ops.push({ op: 'gaze', character: who, target, time })
         ctx.last = who
@@ -177,9 +209,27 @@ export function localDirector(text: string, scene: SceneData): DirectorScript {
     if (!handled) ctx.notes.push(sentence)
     else if (explicit !== undefined) ctx.cursor = Math.max(ctx.cursor, time + 0.8)
   }
+  // A movement endpoint belongs only to its opening shot. A later shot
+  // interrupts it, including when directions were entered out of time order.
+  const cameras = ctx.ops.filter(op => op.op === 'camera')
+  for (const end of cameras) {
+    if (end.cut !== false || !end.pose) continue
+    const start = cameras[cameras.indexOf(end) - 1]
+    if (!start?.pose || start.cut !== true) continue
+    const next = cameras.filter(op => op !== start && op !== end && op.cut !== false && op.time >= start.time && op.time <= end.time)
+      .sort((a, b) => a.time - b.time)[0]
+    if (!next) continue
+    if (next.time > start.time) {
+      // Keep the original easing domain and destination up to the exact cut.
+      // A shortened endpoint would renormalize smoothstep and accelerate it.
+      next.cut = true
+      next.outgoing = { endTime: end.time, pose: end.pose }
+    }
+    ctx.ops.splice(ctx.ops.indexOf(end), 1)
+  }
   const needed = Math.max(0, ...ctx.ops.map((o) => ('time' in o && o.time ? o.time : 0)))
   if (needed + 1.5 > scene.duration && !ctx.ops.some((o) => o.op === 'duration'))
-    ctx.ops.push({ op: 'duration', seconds: Math.ceil(needed + 2) })
+    ctx.ops.unshift({ op: 'duration', seconds: Math.ceil(needed + 2) })
   const reply = ctx.ops.length
     ? `Applied ${ctx.ops.length} direction${ctx.ops.length > 1 ? 's' : ''}.${ctx.notes.length ? ` I could not read: “${ctx.notes.join('”, “')}”.` : ''}`
     : `I could not turn that into directions. Try sentences like “Kit looks at the window”, “after two seconds he sighs”, “close-up at 3s”, “Pip says 'hello'”. Presets: ${PRESET_NAMES.join(', ')}.`

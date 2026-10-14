@@ -43,7 +43,7 @@ export const CHARACTERS: Record<CharacterKind, CharacterDef> = {
     kind: 'ceo',
     name: 'CEO',
     color: '#3a3f5c',
-    expression: 'neutral',
+    expression: 'confused',
     eyeHeight: 1.66,
     tier: 'archetype',
     description:

@@ -180,23 +180,24 @@ export class SceneCommands {
     return event
   }
   // --- Camera ----------------------------------------------------------------
-  addCameraKeyframe(time: number, pose: CameraPose, options: { cut?: boolean; label?: string } = {}) {
+  addCameraKeyframe(time: number, pose: CameraPose, options: { cut?: boolean; label?: string; outgoing?: Extract<TimelineEvent, { type: 'camera' }>['outgoing'] } = {}) {
     this.key({
       id: uid('k'),
       type: 'camera',
       time,
       pose: structuredClone(pose),
       ...(options.cut && { cut: true }),
-      ...(options.label && { label: options.label })
+      ...(options.label && { label: options.label }),
+      ...(options.outgoing && { outgoing: structuredClone(options.outgoing) })
     })
   }
   /** Frames a preset on a character (the first one by default) and records it at `time`. */
-  cameraPreset(name: PresetName, time: number, subject?: string) {
+  cameraPreset(name: PresetName, time: number, subject?: string, options: Parameters<SceneCommands['addCameraKeyframe']>[2] = {}) {
     const character = subject ? this.character(subject) : this.scene.characters[0]
     if (!character) throw new Error('No character to frame')
     const pose = presetPose(name, subjectOf(this.scene, character, time))
     if (time <= 0 && !this.scene.timeline.some((e) => e.type === 'camera')) this.setCamera(pose)
-    this.addCameraKeyframe(time, pose)
+    this.addCameraKeyframe(time, pose, options)
     return pose
   }
   // --- Props and lights --------------------------------------------------------

@@ -1,12 +1,13 @@
-import type { CharacterKind, EnvironmentId } from '../scene/model'
+import type { EnvironmentId, Expression } from '../scene/model'
 import type { OutputFormat } from '../render/presets'
 import type { ContentLanguage } from '../audio/plan'
 import type { CastMember } from './project'
 import { castMember } from './project'
-/**
- * Content templates: a proven shape (scene, cast, shot structure, pacing) with
- * a sample script to replace, in English with a French version behind it.
- * Instantiating one is `createProject` + `setScript`.
+import { EMOTION_LABELS } from './acting'
+
+/** Reusable fictional sketches, not evidence of customer results. Replace the
+ * workflow and dialogue, keep the hook → friction → demonstration → dry payoff.
+ * Caption positioning stays outside the spoken punchline.
  */
 export interface ContentTemplate {
   id: string
@@ -16,309 +17,189 @@ export interface ContentTemplate {
   environment: EnvironmentId
   format: OutputFormat
   cast: CastMember[]
-  /** Target length in seconds; the scripts below land near it. */
   duration: number
   script: Record<ContentLanguage, string>
+  cta: Record<ContentLanguage, string>
   tags: string[]
 }
-const lew = (mark?: string) => castMember('lew', { mark })
-const ceo = (mark?: string) => castMember('ceo', { mark })
-const dev = (mark?: string) => castMember('dev', { mark })
-const extra = (kind: CharacterKind, role: string, name: string, mark?: string) => castMember(kind, { role, name, mark })
-export const TEMPLATES: ContentTemplate[] = [
-  {
-    id: 'misconception',
-    name: 'AI misconception',
-    premise: 'The CEO believes X, Lew explains why it is wrong, punchline.',
-    structure: ['Two-shot: the belief, stated with confidence', 'Medium on Lew: one question that exposes the gap', 'Close-ups: the admission', 'Slow push on Lew: the punchline'],
-    environment: 'office-night',
-    format: 'reel',
-    cast: [lew('desk'), ceo('guest')],
-    duration: 20,
-    tags: ['explainer', 'agents'],
-    script: {
-      en: `CAMERA: two-shot Lew CEO
-CEO (happy): "We put all our documents in a vector database. We have RAG now."
 
-Lew looks at CEO.
-CAMERA: medium Lew
-LEW (deadpan): "Ask it which contract expires next month."
+type Beat = [speaker: string, english: string, french: string, emotion?: Expression]
+interface Sketch {
+  id: string
+  name: string
+  premise: string
+  environment: EnvironmentId
+  cast: CastMember[]
+  tags: string[]
+  beats: [Beat, Beat, Beat, Beat, Beat, Beat]
+  cta: Record<ContentLanguage, string>
+}
+const officeCast = () => [castMember('lew', { mark: 'desk' }), castMember('ceo', { mark: 'guest' })]
+const labCast = () => [castMember('lew', { mark: 'right' }), castMember('dev', { mark: 'left' })]
+const meetingCast = () => [castMember('lew', { mark: 'head' }), castMember('ceo', { mark: 'right' })]
 
-CAMERA: close-up CEO
-CEO looks confused.
-CEO: "It... gave me three different answers."
-
-CAMERA: close-up Lew slow-push
-LEW (smug): "Then you have a search box."
-
-PAUSE 0.4
-
-LEW: "Not a knowledge base."
-`,
-      fr: `CAMERA: two-shot Lew CEO
-CEO (content): "On a mis tous nos documents dans une base vectorielle. On a du RAG maintenant."
-
-Lew regarde le CEO.
-CAMERA: medium Lew
-LEW (impassible): "Demandez-lui quel contrat expire le mois prochain."
-
-CAMERA: close-up CEO
-Le CEO a l'air perdu.
-CEO: "Il… m'a donné trois réponses différentes."
-
-CAMERA: close-up Lew slow-push
-LEW (narquois): "Alors vous avez un moteur de recherche."
-
-PAUSE 0.4
-
-LEW: "Pas une base de connaissances."
-`
-    }
-  },
-  {
-    id: 'agent-demo',
-    name: 'Agent demo',
-    premise: 'Someone asks for something, the agent runs the workflow, result.',
-    structure: ['Medium on the client: the request', 'Close-up on the screen: the agent at work', 'Two-shot: the result, and what it means'],
-    environment: 'office-night',
-    format: 'reel',
-    cast: [lew('desk'), extra('ceo', 'client', 'Client', 'guest')],
-    duration: 22,
-    tags: ['demo', 'product'],
-    script: {
-      en: `CAMERA: two-shot Lew Client
-CLIENT: "Can your agent follow up with the leads we haven't touched in two weeks?"
-
-CAMERA: medium Lew
-Lew looks at laptop.
-LEW: "It's reading the CRM now."
-
-PAUSE 0.6
-
-LEW: "Fourteen leads. Nine drafts. Three meetings proposed."
-
-CAMERA: close-up Client
-CLIENT (surprised): "That took eleven seconds."
-
-CAMERA: medium Lew slow-push
-Lew looks at the camera.
-LEW (smug): "It also logged everything. Ask your last intern to do that."
-`,
-      fr: `CAMERA: two-shot Lew Client
-CLIENT: "Votre agent peut relancer les prospects qu'on n'a pas touchés depuis deux semaines ?"
-
-CAMERA: medium Lew
-Lew regarde le laptop.
-LEW: "Il est en train de lire le CRM."
-
-PAUSE 0.6
-
-LEW: "Quatorze prospects. Neuf brouillons. Trois rendez-vous proposés."
-
-CAMERA: close-up Client
-CLIENT (surpris): "Ça a pris onze secondes."
-
-CAMERA: medium Lew slow-push
-Lew regarde la caméra.
-LEW (narquois): "Et il a tout journalisé. Demandez ça à votre dernier stagiaire."
-`
-    }
-  },
-  {
-    id: 'before-after',
-    name: 'Before / after',
-    premise: 'The manual workflow, then the Lew workflow.',
-    structure: ['Medium on the employee: the manual grind', 'Cut to Lew: the same task, automated', 'Close-up: the difference in one line'],
-    environment: 'meeting-room',
-    format: 'reel',
-    cast: [extra('dev', 'ops', 'Ops', 'left'), lew('head')],
-    duration: 20,
-    tags: ['automation', 'workflow'],
-    script: {
-      en: `CAMERA: medium Ops
-OPS (tired): "Every Monday I copy the support tickets into a sheet, tag them, and email the summary."
-
-Ops sighs.
-OPS: "Takes me the whole morning."
-
-CAMERA: medium Lew
-LEW: "The agent reads the tickets, tags them, writes the summary and posts it in Slack."
-
-PAUSE 0.3
-
-CAMERA: close-up Lew
-LEW (deadpan): "Monday morning is yours again."
-
-CAMERA: close-up Ops
-Ops looks surprised.
-OPS: "What do I do with it?"
-
-CAMERA: two-shot Lew Ops
-LEW (smug): "Not that."
-`,
-      fr: `CAMERA: medium Ops
-OPS (fatigué): "Chaque lundi je copie les tickets support dans un tableur, je les tague, et j'envoie le résumé par mail."
-
-Ops soupire.
-OPS: "Ça me prend toute la matinée."
-
-CAMERA: medium Lew
-LEW: "L'agent lit les tickets, les tague, écrit le résumé et le poste sur Slack."
-
-PAUSE 0.3
-
-CAMERA: close-up Lew
-LEW (impassible): "Le lundi matin est à vous."
-
-CAMERA: close-up Ops
-Ops a l'air surpris.
-OPS: "Et j'en fais quoi ?"
-
-CAMERA: two-shot Lew Ops
-LEW (narquois): "Pas ça."
-`
-    }
-  },
-  {
-    id: 'dev-joke',
-    name: 'Developer joke',
-    premise: 'A developer asks the AI for something simple, chaos.',
-    structure: ['Medium on the dev: the simple ask', 'Close-up on the screen: the escalation', 'Two-shot with Lew: the dry conclusion'],
-    environment: 'ai-lab',
-    format: 'reel',
-    cast: [dev('left'), lew('right')],
-    duration: 18,
-    tags: ['humour', 'developers'],
-    script: {
-      en: `CAMERA: medium Dev
-DEV (tired): "I asked it to rename one variable."
-
-PAUSE 0.3
-
-DEV: "It refactored the whole module, added tests, and opened a pull request titled 'Modernize'."
-
-CAMERA: close-up Lew
-Lew looks at Dev.
-LEW (deadpan): "Did the tests pass?"
-
-CAMERA: close-up Dev
-Dev looks away.
-DEV: "...they pass now."
-
-CAMERA: two-shot Lew Dev slow-push
-LEW (smug): "That's not an agent. That's an intern with admin rights."
-`,
-      fr: `CAMERA: medium Dev
-DEV (fatigué): "Je lui ai demandé de renommer une variable."
-
-PAUSE 0.3
-
-DEV: "Il a refactoré tout le module, ajouté des tests, et ouvert une pull request intitulée « Modernisation »."
-
-CAMERA: close-up Lew
-Lew regarde Dev.
-LEW (impassible): "Les tests passent ?"
-
-CAMERA: close-up Dev
-Dev détourne le regard.
-DEV: "…ils passent maintenant."
-
-CAMERA: two-shot Lew Dev slow-push
-LEW (narquois): "C'est pas un agent. C'est un stagiaire avec les droits admin."
-`
-    }
-  },
-  {
-    id: 'business-pain',
-    name: 'Business pain',
-    premise: 'An employee does a repetitive task, Lew automates it.',
-    structure: ['Medium on the employee: the task, in numbers', 'Medium on Lew: what the agent does instead', 'Close-up: the payoff'],
-    environment: 'meeting-room',
-    format: 'reel',
-    cast: [extra('ceo', 'sales', 'Sales', 'right'), lew('head')],
-    duration: 20,
-    tags: ['sales', 'automation'],
-    script: {
-      en: `CAMERA: medium Sales
-SALES: "After every call I update the CRM, write the follow-up and book the next step."
-
-Sales sighs.
-SALES: "Forty calls a week."
-
-CAMERA: medium Lew
-LEW: "The agent listens to the call, updates the CRM and drafts the follow-up before you hang up."
-
-CAMERA: close-up Sales
-SALES (surprised): "Before I hang up?"
-
-CAMERA: close-up Lew slow-push
-LEW (deadpan): "It types faster than you talk."
-`,
-      fr: `CAMERA: medium Sales
-SALES: "Après chaque appel je mets à jour le CRM, j'écris la relance et je cale la prochaine étape."
-
-Sales soupire.
-SALES: "Quarante appels par semaine."
-
-CAMERA: medium Lew
-LEW: "L'agent écoute l'appel, met à jour le CRM et rédige la relance avant que vous ayez raccroché."
-
-CAMERA: close-up Sales
-SALES (surpris): "Avant que j'aie raccroché ?"
-
-CAMERA: close-up Lew slow-push
-LEW (impassible): "Il tape plus vite que vous parlez."
-`
-    }
-  },
-  {
-    id: 'explainer',
-    name: 'Technical explanation',
-    premise: 'One concept, one contrast, one line to remember.',
-    structure: ['Medium on Lew: the term everyone uses', 'Two-shot: the question that separates the two', 'Close-up slow push: the definition in one sentence'],
-    environment: 'ai-lab',
-    format: 'reel',
-    cast: [lew('center'), ceo('right')],
-    duration: 22,
-    tags: ['explainer', 'concepts'],
-    script: {
-      en: `CAMERA: medium Lew
-Lew looks at the camera.
-LEW: "Everyone says 'agent'. Almost nobody means the same thing."
-
-CAMERA: two-shot Lew CEO
-CEO: "So what is one?"
-
-CAMERA: medium Lew
-LEW: "A chatbot answers. An agent decides what to do next, uses tools, and checks its own work."
-
-CAMERA: close-up CEO
-CEO looks confused.
-CEO: "Checks its own work?"
-
-CAMERA: close-up Lew slow-push
-LEW (deadpan): "Yes. That's the part nobody demos."
-`,
-      fr: `CAMERA: medium Lew
-Lew regarde la caméra.
-LEW: "Tout le monde dit « agent ». Presque personne ne parle de la même chose."
-
-CAMERA: two-shot Lew CEO
-CEO: "C'est quoi, alors ?"
-
-CAMERA: medium Lew
-LEW: "Un chatbot répond. Un agent décide de la suite, utilise des outils, et vérifie son propre travail."
-
-CAMERA: close-up CEO
-Le CEO a l'air perdu.
-CEO: "Il vérifie son propre travail ?"
-
-CAMERA: close-up Lew slow-push
-LEW (impassible): "Oui. C'est la partie que personne ne montre en démo."
-`
-    }
+/** Camera tokens are the existing parser vocabulary. The shoulders reverse with
+ * the speaker; the profile isolates the awkward admission; the two-shot reconnects
+ * the practical answer. Only the payoff pushes in. No new animation machinery.
+ */
+function sketch(input: Sketch): ContentTemplate {
+  const script = (language: ContentLanguage) => input.beats.map(([speaker, english, french, emotion], index) => {
+    const other = input.cast.find(c => c.name.toLowerCase() !== speaker.toLowerCase())!.name
+    const camera = [
+      `wide ${speaker} slow-pan`,
+      `over-shoulder ${speaker} ${other}`,
+      `profile ${speaker}`,
+      `two-shot ${speaker} ${other}`,
+      `over-shoulder ${speaker} ${other}`,
+      `close-up ${speaker} slow-push`
+    ][index]
+    const reaction = index === 4
+      ? `${speaker} ${language === 'fr' ? 'détourne le regard.' : 'looks away.'}\nPAUSE 0.5\n`
+      : ''
+    return `CAMERA: ${camera}\n${reaction}${speaker.toUpperCase()}${emotion ? ` (${EMOTION_LABELS[emotion][language]})` : ''}: "${language === 'fr' ? french : english}"`
+  }).join('\n\n') + '\n'
+  return {
+    id: input.id, name: input.name, premise: input.premise,
+    structure: ['Wide hook: the confident claim', 'Over-shoulder: expose the friction', 'Profile: the admission', 'Two-shot: demonstrate a bounded workflow', 'Reverse shoulder and pause: let it land', 'Close-up slow push: dry payoff; soft positioning in the caption'],
+    environment: input.environment, format: 'reel', cast: input.cast,
+    duration: 28, tags: input.tags, cta: input.cta,
+    script: { en: script('en'), fr: script('fr') }
   }
+}
+
+export const TEMPLATES: ContentTemplate[] = [
+  sketch({
+    id: 'misconception', name: 'AI misconception',
+    premise: 'A vector database is not a complete internal knowledge workflow.',
+    environment: 'office-night', cast: officeCast(), tags: ['explainer', 'rag', 'agents'],
+    cta: { en: 'Lew AI Engineering: start with a question your team actually asks.', fr: 'Lew AI Engineering : commencez par une vraie question de votre équipe.' },
+    beats: [
+      ['CEO', 'We uploaded the documents. Knowledge solved.', 'On a importé les documents. Le savoir, réglé.', 'happy'],
+      ['Lew', 'Which contract expires next month? Source included.', 'Quel contrat expire le mois prochain ? Avec la source.', 'deadpan'],
+      ['CEO', 'It found the office lunch menu.', 'Il a trouvé le menu de la cantine.', 'confused'],
+      ['Lew', 'Test retrieval, permissions and citations. Then test the answer.', "Testez la recherche, les droits et les citations. Puis la réponse."],
+      ['CEO', 'So uploading was the easy part?', "Donc importer, c'était la partie facile ?", 'confused'],
+      ['Lew', 'Yes. Even the lunch menu knew that.', 'Oui. Même la cantine était au courant.', 'deadpan']
+    ]
+  }),
+  sketch({
+    id: 'agent-demo', name: 'Agent demo',
+    premise: 'Illustrative CRM follow-up workflow, with human approval and an audit trail.',
+    environment: 'office-night',
+    cast: [castMember('lew', { mark: 'desk' }), castMember('ceo', { role: 'client', name: 'Client', mark: 'guest' })],
+    tags: ['demo', 'crm', 'integrations'],
+    cta: { en: 'Bring Lew one workflow to prototype with sample data, then measure it.', fr: 'Proposez à Lew un workflow à prototyper sur des données fictives, puis à mesurer.' },
+    beats: [
+      ['Client', 'Can the agent chase our forgotten leads?', "L'agent peut relancer nos prospects oubliés ?"],
+      ['Lew', 'Here is an example with sample CRM data.', 'Voici un exemple sur un CRM fictif.'],
+      ['Client', 'Usually I copy everything into email.', "Normalement, je recopie tout dans un mail.", 'tired'],
+      ['Lew', 'Read the CRM, draft the email, request approval, log it.', 'Lire le CRM, préparer le mail, demander validation, journaliser.'],
+      ['Client', 'It does not just send everything?', "Il n'envoie pas tout directement ?", 'surprised'],
+      ['Lew', 'No. Enthusiasm is not a permission model.', "Non. L'enthousiasme ne donne pas les droits d'accès.", 'deadpan']
+    ]
+  }),
+  sketch({
+    id: 'before-after', name: 'Before / after',
+    premise: 'Replace support-ticket copying with a reviewable summary workflow.',
+    environment: 'ai-lab', cast: labCast(), tags: ['automation', 'workflow', 'support'],
+    cta: { en: 'Lew AI Engineering: map the handoffs before adding an agent.', fr: 'Lew AI Engineering : cartographiez les passages de relais avant d’ajouter un agent.' },
+    beats: [
+      ['Dev', 'My Monday is a human copy-paste API.', 'Le lundi, je suis une API de copier-coller.', 'tired'],
+      ['Lew', 'Tickets into a spreadsheet, then Slack?', 'Les tickets dans un tableur, puis Slack ?', 'deadpan'],
+      ['Dev', 'And someone asks where the summary went.', "Et quelqu'un demande où est passé le résumé.", 'tired'],
+      ['Lew', 'Try ticket retrieval, tagged drafts, review, then Slack.', 'Essayons : tickets, brouillons classés, validation, puis Slack.'],
+      ['Dev', 'And when a ticket is ambiguous?', 'Et quand un ticket est ambigu ?', 'curious'],
+      ['Lew', 'Escalate. Not everything needs creative writing.', "On escalade. Tout ne mérite pas une rédaction créative.", 'deadpan']
+    ]
+  }),
+  sketch({
+    id: 'dev-joke', name: 'Developer joke',
+    premise: 'A coding agent needs a bounded task and permissions, not blind trust.',
+    environment: 'ai-lab', cast: labCast(), tags: ['humour', 'developers', 'tools'],
+    cta: { en: 'Build bounded agents with Lew. Start with permissions and a test.', fr: 'Construisez des agents cadrés avec Lew. Commencez par les droits et un test.' },
+    beats: [
+      ['Dev', 'I asked it to rename one variable.', 'Je lui ai demandé de renommer une variable.', 'tired'],
+      ['Lew', 'And gave it admin access?', 'Avec les droits admin ?', 'deadpan'],
+      ['Dev', 'It redesigned the billing service.', 'Il a repensé le service de facturation.', 'tired'],
+      ['Lew', 'Sandbox, scoped tools, tests, then approval.', 'Sandbox, outils limités, tests, puis validation.'],
+      ['Dev', 'So less autonomy?', "Donc moins d'autonomie ?", 'confused'],
+      ['Lew', 'Less surprise accounting.', 'Moins de comptabilité surprise.', 'deadpan']
+    ]
+  }),
+  sketch({
+    id: 'business-pain', name: 'Business pain',
+    premise: 'Turn meeting notes into proposed CRM updates without promising instant results.',
+    environment: 'meeting-room',
+    cast: [castMember('lew', { mark: 'head' }), castMember('ceo', { role: 'sales', name: 'Sales', mark: 'right' })],
+    tags: ['sales', 'automation', 'integrations'],
+    cta: { en: 'Lew connects the workflow, not just another chat window.', fr: 'Lew relie le workflow, pas seulement une fenêtre de chat de plus.' },
+    beats: [
+      ['Sales', 'The call ended. My second job starts.', "L'appel est fini. Mon deuxième métier commence."],
+      ['Lew', 'CRM, follow-up, calendar?', 'CRM, relance, agenda ?', 'deadpan'],
+      ['Sales', 'Same notes. Different tabs. Every time.', 'Mêmes notes. Autres onglets. À chaque fois.', 'tired'],
+      ['Lew', 'Draft CRM updates from approved notes. Review before writing.', 'Préparer le CRM depuis les notes validées. Vérifier avant écriture.'],
+      ['Sales', 'Where is the magic?', 'Elle est où, la magie ?', 'confused'],
+      ['Lew', 'Mostly in not opening another tab.', 'Surtout dans le fait de ne pas ouvrir un autre onglet.', 'deadpan']
+    ]
+  }),
+  sketch({
+    id: 'explainer', name: 'Technical explanation',
+    premise: 'Distinguish an agent workflow from a chatbot without claiming self-checks guarantee correctness.',
+    environment: 'meeting-room', cast: meetingCast(), tags: ['explainer', 'concepts', 'agents'],
+    cta: { en: 'Lew AI Engineering: choose the workflow before choosing the framework.', fr: 'Lew AI Engineering : choisissez le workflow avant le framework.' },
+    beats: [
+      ['CEO', 'We renamed the chatbot. It is an agent.', "On a renommé le chatbot. C'est un agent.", 'happy'],
+      ['Lew', 'What can it actually do?', "Il peut faire quoi, concrètement ?", 'deadpan'],
+      ['CEO', 'Answer. In a more expensive font.', 'Répondre. Avec une police plus chère.', 'confused'],
+      ['Lew', 'An agent uses tools toward a goal. Validate its outputs.', 'Un agent utilise des outils vers un objectif. Vérifiez ses sorties.'],
+      ['CEO', 'The font does not count?', 'La police ne compte pas ?', 'confused'],
+      ['Lew', 'Only for the invoice.', 'Seulement sur la facture.', 'deadpan']
+    ]
+  }),
+  sketch({
+    id: 'orchestration', name: 'Agent orchestration',
+    premise: 'Show routing, bounded specialists, shared state and approval rather than a crowd of chatbots.',
+    environment: 'meeting-room', cast: meetingCast(), tags: ['orchestration', 'agents', 'workflow'],
+    cta: { en: 'Lew AI Engineering: design the handoffs, owners and failure paths first.', fr: 'Lew AI Engineering : définissez les relais, les responsables et les chemins d’échec.' },
+    beats: [
+      ['CEO', 'I hired a team of agents.', "J'ai recruté une équipe d'agents.", 'happy'],
+      ['Lew', 'Who owns the next step?', 'Qui est responsable de la suite ?', 'deadpan'],
+      ['CEO', 'They keep asking each other.', 'Ils se renvoient la question.', 'confused'],
+      ['Lew', 'Route the task. Share state. Bound retries. Approve writes.', 'Router la tâche. Partager l’état. Limiter les tentatives. Valider les écritures.'],
+      ['CEO', 'So they need a workflow?', 'Donc il leur faut un workflow ?', 'confused'],
+      ['Lew', 'Otherwise you automated the meeting.', 'Sinon, vous avez automatisé la réunion.', 'deadpan']
+    ]
+  }),
+  sketch({
+    id: 'production-evaluation', name: 'Demo to production',
+    premise: 'Use representative evaluations, traces, budgets and rollback before releasing an agent.',
+    environment: 'ai-lab', cast: labCast(), tags: ['evaluation', 'production', 'observability'],
+    cta: { en: 'Lew takes the boring parts seriously: evaluations, integrations and production.', fr: 'Lew prend le travail invisible au sérieux : évaluations, intégrations et production.' },
+    beats: [
+      ['Dev', 'The demo passed. Can I sleep?', 'La démo marche. Je peux dormir ?', 'tired'],
+      ['Lew', 'What happens when the API times out?', "Et si l'API ne répond pas ?", 'deadpan'],
+      ['Dev', 'The demo did not have that slide.', "La démo n'avait pas cette diapo.", 'tired'],
+      ['Lew', 'Test real cases. Trace failures. Set budgets and rollback.', 'Tester des cas réels. Tracer les échecs. Prévoir budgets et rollback.'],
+      ['Dev', 'And then we measure the results?', 'Et ensuite, on mesure les résultats ?', 'curious'],
+      ['Lew', 'Yes. Applause is not monitoring.', "Oui. Les applaudissements ne sont pas du monitoring.", 'deadpan']
+    ]
+  }),
+  sketch({
+    id: 'internal-knowledge', name: 'Internal knowledge assistant',
+    premise: 'A useful internal RAG assistant cites current permitted sources and admits missing evidence.',
+    environment: 'office-night', cast: officeCast(), tags: ['rag', 'knowledge', 'permissions'],
+    cta: { en: 'Lew builds internal assistants around your sources, access rules and real questions.', fr: 'Lew construit les assistants internes autour de vos sources, droits et vraies questions.' },
+    beats: [
+      ['CEO', 'Our assistant knows the entire company.', 'Notre assistant connaît toute l’entreprise.', 'happy'],
+      ['Lew', 'Can everyone read the salary folder?', 'Tout le monde peut lire le dossier des salaires ?', 'deadpan'],
+      ['CEO', 'Please say that is hypothetical.', 'Dites-moi que c’est une hypothèse.', 'confused'],
+      ['Lew', 'Filter by access. Cite current sources. Abstain without evidence.', 'Filtrer par droits. Citer les sources à jour. S’abstenir sans preuve.'],
+      ['CEO', 'Even if it sounds confident?', 'Même s’il a l’air sûr de lui ?', 'confused'],
+      ['Lew', 'Especially then. We already have executives.', 'Surtout là. On a déjà des dirigeants.', 'deadpan']
+    ]
+  })
 ]
+
 export function findTemplate(id: string) {
-  return TEMPLATES.find((t) => t.id === id)
+  return TEMPLATES.find(t => t.id === id)
 }

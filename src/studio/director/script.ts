@@ -7,7 +7,8 @@ import type {
   Expression,
   PropKind,
   SceneData,
-  Vec3
+  Vec3,
+  TimelineEvent
 } from '../scene/model'
 import { SceneCommands } from '../scene/commands'
 import { validateScene } from '../serialization/scene'
@@ -40,7 +41,7 @@ export type DirectorOp =
   | { op: 'expression'; character: string; expression: Expression; time?: number }
   | { op: 'say'; character: string; text: string; time: number; duration?: number }
   | { op: 'action'; character: string; action: ActionId; time: number }
-  | { op: 'camera'; time: number; preset?: PresetName; subject?: string; pose?: CameraPose }
+  | { op: 'camera'; time: number; preset?: PresetName; subject?: string; pose?: CameraPose; cut?: boolean; outgoing?: Extract<TimelineEvent, { type: 'camera' }>['outgoing'] }
   | { op: 'addProp'; kind: PropKind; id?: string; position: Vec3; color?: string; scale?: number }
   | { op: 'removeProp'; prop: string }
   | { op: 'light'; id?: string; position?: Vec3; color?: string; intensity?: number }
@@ -120,8 +121,8 @@ export function applyScript(scene: SceneData, script: DirectorScript, emptyScene
           c.act(op.character, op.action, op.time)
           break
         case 'camera':
-          if (op.pose) c.addCameraKeyframe(op.time, op.pose)
-          else if (op.preset && isPresetName(op.preset)) c.cameraPreset(op.preset, op.time, op.subject)
+          if (op.pose) c.addCameraKeyframe(op.time, op.pose, { cut: op.cut, outgoing: op.outgoing })
+          else if (op.preset && isPresetName(op.preset)) c.cameraPreset(op.preset, op.time, op.subject, { cut: op.cut, outgoing: op.outgoing })
           else throw new Error('Camera op needs a preset or a pose')
           break
         case 'addProp':

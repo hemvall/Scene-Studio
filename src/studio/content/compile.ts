@@ -6,6 +6,7 @@ import { ENVIRONMENTS } from '../environments/catalog'
 import { CHARACTERS } from '../characters/catalog'
 import { OUTPUT_PRESETS } from '../render/presets'
 import { shotPoses, SHOT_LABELS } from '../camera/shots'
+import { automaticShots } from '../director/coverage'
 import { subjectOf, eyeHeight } from '../timeline/evaluate'
 import { ACTING } from './acting'
 import { screenplayDialogue } from './screenplay'
@@ -68,7 +69,7 @@ export function compileProject(project: ContentProject): CompileResult {
   const idOf = (role: string) => ids.get(role) ?? ids.get(role.toLowerCase())
   const within = (t: number) => Math.min(scene.duration, Math.max(0, round(t)))
   // Shots → camera keys: a cut on each shot, a second eased key when the shot moves.
-  const shots = [...project.shots].sort((a, b) => a.start - b.start)
+  const shots = (project.shots.length ? [...project.shots] : automaticShots(project.dialogue, project.cast)).sort((a, b) => a.start - b.start)
   if (!shots.length && project.cast[0]) shots.push({ id: 's-auto', type: project.cast.length > 1 ? 'two-shot' : 'medium', target: project.cast[0].role, start: 0, movement: 'static' })
   if (shots[0] && shots[0].start > 0) shots.unshift({ ...shots[0], id: 's-open', start: 0, movement: 'static', duration: undefined })
   shots.forEach((shot, i) => {
