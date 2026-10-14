@@ -114,7 +114,11 @@ interface EventBase {
   time: number
 }
 export type TimelineEvent =
-  | (EventBase & { type: 'camera'; pose: CameraPose; cut?: boolean; label?: string })
+  | (EventBase & {
+      type: 'camera'; pose: CameraPose; cut?: boolean; label?: string
+      /** Original destination and timing of movement interrupted by this cut. */
+      outgoing?: { endTime: number; pose: CameraPose }
+    })
   | (EventBase & { type: 'position'; character: string; position: Vec3 })
   | (EventBase & { type: 'gaze'; character: string; target: GazeTarget })
   | (EventBase & { type: 'expression'; character: string; expression: Expression })

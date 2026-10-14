@@ -4,7 +4,53 @@ import { CharacterRig } from './rig'
 import { buildLew } from './lew'
 import type { CharacterData } from '../scene/model'
 const data: CharacterData = { id: 'lew', name: 'Lew', kind: 'lew', position: [0,0,0], rotation: [0,0,0], scale: 1, color: '#6b6f7b', expression: 'neutral', gaze: { kind: 'camera' } }
+describe('Lew reference silhouette', () => {
+  it('has a substantial continuous striped curved tail behind a slender pale torso', () => {
+    const rig = new CharacterRig(data)
+    buildLew(rig)
+    const tail = rig.body.getObjectByName('lew-tail') as T.Mesh
+    expect(tail, 'tail should be one connected mesh, not six beads').toBeDefined()
+    expect(tail.geometry.type).toBe('TubeGeometry')
+    expect(tail.geometry.groups).toHaveLength(8)
+    expect(tail.geometry.groups.map(g => g.materialIndex)).toEqual([0, 1, 0, 1, 0, 1, 0, 1])
+    const bounds = new T.Box3().setFromObject(tail)
+    expect(bounds.max.x - bounds.min.x).toBeGreaterThan(0.65)
+    expect(bounds.max.y - bounds.min.y).toBeGreaterThan(0.65)
+    expect(bounds.max.z).toBeLessThan(0.05)
+    const torso = rig.body.getObjectByName('lew-torso') as T.Mesh
+    expect((torso.material as T.MeshToonMaterial).color.getHexString()).toBe('ebe8ea')
+    const size = new T.Box3().setFromObject(torso).getSize(new T.Vector3())
+    expect(size.y / size.x).toBeGreaterThan(1.7)
+    rig.dispose()
+  })
+  it('has a broad angular head, a continuous pale jaw and dark inset triangular ears', () => {
+    const rig = new CharacterRig(data)
+    buildLew(rig)
+    const head = rig.head.getObjectByName('lew-head') as T.Mesh
+    expect(head, 'reference head must replace the round ellipsoid').toBeDefined()
+    const bounds = new T.Box3().setFromObject(head)
+    const size = bounds.getSize(new T.Vector3())
+    expect(size.x / size.y).toBeGreaterThan(1.55)
+    expect(head.geometry.type).toBe('BufferGeometry')
+    expect(head.geometry.groups.some(g => g.materialIndex === 1)).toBe(true)
+    expect((head.material as T.MeshToonMaterial[])[1]!.color.getHexString()).toBe('ebe8ea')
+    for (const ear of [rig.leftEar, rig.rightEar]) {
+      const inset = ear.getObjectByName('lew-ear-inset') as T.Mesh
+      expect(inset).toBeDefined()
+      expect((inset.material as T.MeshToonMaterial).color.getHexString()).toBe('0f0f14')
+      expect(inset.geometry.getAttribute('position').count).toBe(3)
+    }
+    rig.dispose()
+  })
+})
 describe('Lew facial mask', () => {
+  it('keeps the forehead clear of detached dark markings', () => {
+    const rig = new CharacterRig(data)
+    buildLew(rig)
+    const marks = rig.head.children.filter(child => child instanceof T.Mesh && !Array.isArray(child.material) && 'color' in child.material && (child.material as T.MeshToonMaterial).color.getHexString() === '0f0f14' && child.position.y > 0.65)
+    expect(marks).toHaveLength(0)
+    rig.dispose()
+  })
   it('keeps both pupils in front of the head and mask from frontal and oblique views', () => {
     const rig = new CharacterRig(data)
     buildLew(rig)

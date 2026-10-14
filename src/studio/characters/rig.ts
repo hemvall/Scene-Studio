@@ -3,7 +3,8 @@ import type { CharacterData } from '../scene/model'
 import type { Gaze } from '../animation/gaze'
 import type { FaceParams } from '../animation/expressions'
 import type { ActionPose } from '../animation/actions'
-import { DEFAULT_IDLE, idleAt, type IdleProfile } from '../animation/idle'
+import { idleAt, type IdleProfile } from '../animation/idle'
+import { CHARACTERS, idleProfile } from './catalog'
 import { flat, ink, INK, oval, toon } from '../engine/toon'
 import { disposeTree } from '../engine/geometry'
 /**
@@ -26,6 +27,8 @@ export interface RigMetrics {
   earLift: number
   armRest: [number, number]
   mouthWidth: number
+  /** Baseline upper-lid drop; an open surprised face can still override it. */
+  restingLid?: number
 }
 export interface CharacterFrame {
   data: CharacterData
@@ -90,7 +93,7 @@ export class CharacterRig {
   }
   update(frame: CharacterFrame) {
     const { data, gaze, face, action } = frame
-    const profile = frame.idle ?? DEFAULT_IDLE
+    const profile = frame.idle ?? idleProfile(CHARACTERS[data.kind].personality)
     const idle = idleAt(frame.time, frame.seed, profile)
     const m = this.metrics
     this.root.position.set(...data.position)
@@ -115,7 +118,8 @@ export class CharacterRig {
     this.leftArm.rotation.z = m.armRest[0] + idle.breath * 0.4
     this.rightArm.rotation.z = m.armRest[1] - action.armRaise * 2.4 - action.armSwing
     this.rightArm.rotation.x = -action.armRaise * 0.3
-    const lid = Math.min(1, Math.max(0, face.lid + action.lid))
+    const restingLid = face.lid < 0 ? 0 : (m.restingLid ?? 0)
+    const lid = Math.min(1, Math.max(0, restingLid + face.lid + action.lid))
     const blink = 1 - (1 - idle.blink) * (1 - lid * 0.6)
     this.eyes.forEach((eye, i) => {
       const side = i === 0 ? 1 : -1

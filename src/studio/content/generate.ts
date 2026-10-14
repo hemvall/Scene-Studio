@@ -55,10 +55,12 @@ LANGUAGE: the primary version is ENGLISH (title, hook, CTA, every line), unless 
 
 You answer by calling ${PROJECT_TOOL_NAME} once with a complete project. Rules:
 - 15 to 30 seconds. Reading speed is about 2.6 words per second; a line of 8 words lasts ~3.7 s. Count. A voice will be generated for every line: write what a person can say in one breath.
-- One idea per video. Open on the hook within the first 3 seconds. End on the punchline: no outro.
+- One idea per video. Shape: hook → pain → bounded demonstration → reaction pause → punchline. Open on the hook within the first 3 seconds. End on the punchline: no outro. Put soft Lew AI Engineering positioning in the caption CTA, not a spoken sales pitch.
+- Never invent customer results, timings, counts or ROI. A fictional demonstration must be called an example or sample in the spoken line (exemple or données fictives in French). Only use measured outcomes when supplied in the brief; do not imply that self-checking guarantees correctness.
+- Lew is calm, clever and subtly sarcastic. CEO is confidently confused; Dev is tired. Lew explains with one concrete workflow, not a lecture or a sneer at employees. Show business tools, permissions, approval, failure handling or evidence where relevant.
 - Lew is the main character, role "lew", at a mark that fits the set (desk, head, center…). Secondary characters are archetypes: ceo (also for a client, sales, a manager: set role and name accordingly, e.g. role "client", name "Client"), dev (developers, ops). Keep names short: they become speaker labels.
 - Prefer the office-night set for Lew's office, meeting-room for corporate scenes, ai-lab for pure concept explanations.
-- Cut between shots at every change of speaker or beat; do not stay on one framing for more than ~6 seconds. Use a slow-push on the punchline.
+- Cut between shots at every change of speaker or beat; do not stay on one framing for more than ~6 seconds. Motivate coverage: wide to establish, two-shot for shared context, over-shoulder Lew CEO for the explanation, reverse over-shoulder CEO Lew for the response, profile for the awkward admission, close-up for the payoff. Write reverse as CAMERA: over-shoulder CEO Lew, never as a new shot type. Use a slow-pan sparingly to reveal context, a slow-push on the punchline and PAUSE 0.4 with a listener reaction before it. Match both languages' camera tokens and beat order.
 - Give listeners something to do with stage directions (looks away, looks confused, nods, sighs, leans back).
 
 Script format (exactly this; blank line between beats; times optional, lines flow one after the other):

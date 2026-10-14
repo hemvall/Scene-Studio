@@ -162,6 +162,12 @@ export function validateScene(input: unknown): SceneData {
       camera(e.pose)
       if (e.cut !== undefined && typeof e.cut !== 'boolean') throw new Error('camera cut must be a boolean')
       if (e.label !== undefined) text(e.label, 'camera label', 60)
+      if (e.outgoing !== undefined) {
+        if (e.cut !== true) throw new Error('Outgoing camera movement requires a cut')
+        const outgoing = record(e.outgoing, 'outgoing camera movement')
+        number(outgoing.endTime, Math.max(Number(e.time), Number.EPSILON), 300, 'outgoing camera end time')
+        camera(outgoing.pose)
+      }
     } else {
       if (!characters.some((c) => c.id === e.character))
         throw new Error(`Timeline event for unknown character: ${String(e.character)}`)

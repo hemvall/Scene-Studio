@@ -38,14 +38,15 @@ export function sample<T>(
   }
   return previous.value
 }
-/** Camera keys ease between each other, except that a key marked `cut` holds the previous pose until its time. */
+/** Camera keys ease between each other. Cuts hold, or finish their outgoing movement on its original easing domain. */
 export function cameraAt(scene: SceneData, time: number): CameraPose {
   let previous: { time: number; pose: CameraPose } = { time: 0, pose: scene.camera }
   for (const e of ordered(scene.timeline)) {
     if (e.type !== 'camera') continue
     if (e.time > time) {
-      if (e.cut || e.time === previous.time) return previous.pose
-      return mixCamera(previous.pose, e.pose, smooth(Math.max(0, (time - previous.time) / (e.time - previous.time))))
+      if ((e.cut && !e.outgoing) || e.time === previous.time) return previous.pose
+      const end = e.outgoing ?? { endTime: e.time, pose: e.pose }
+      return mixCamera(previous.pose, end.pose, smooth(Math.max(0, (time - previous.time) / (end.endTime - previous.time))))
     }
     previous = e
   }
