@@ -47,6 +47,15 @@ export function useStudioDocument() {
   const projects = shallowRef<ContentProject[]>(library.projects)
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
   // Deep links: #project=<id>, #template=<id> (a fresh project), and t=<seconds> to open at that moment.
+  const exampleLink = hash.get('example')
+  if (exampleLink) {
+    const reel = EXAMPLE_REELS.find(r => r.id === exampleLink)
+    if (reel) {
+      const fresh = buildExample(reel, new Date().toISOString())
+      fresh.id = `${fresh.id}-${Date.now().toString(36)}`
+      projects.value = [fresh, ...projects.value]
+    }
+  }
   const templateLink = hash.get('template')
   if (templateLink) {
     try {
@@ -55,7 +64,7 @@ export function useStudioDocument() {
       /* unknown template: the library opens instead */
     }
   }
-  const linked = templateLink && projects.value[0] ? projects.value[0].id : (hash.get('project') ?? hash.get('scene'))
+  const linked = (templateLink || (exampleLink && EXAMPLE_REELS.some(r => r.id === exampleLink))) && projects.value[0] ? projects.value[0].id : (hash.get('project') ?? hash.get('scene'))
   const initialTime = Math.max(0, Number(hash.get('t')) || 0)
   const activeId = ref(projects.value.some((p) => p.id === linked) ? linked! : library.active)
   const view = ref<View>(linked && projects.value.some((p) => p.id === linked) ? 'studio' : 'library')
