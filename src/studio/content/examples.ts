@@ -18,6 +18,7 @@ export interface ExampleReel {
   cast: CastMember[]
   tags: string[]
   duration?: number
+  language?: ContentLanguage
   notes?: string
   script: Record<ContentLanguage, string>
 }
@@ -25,6 +26,98 @@ const lew = (mark: string): CastMember => ({ role: 'lew', kind: 'lew', name: 'Le
 const ceo = (mark: string, name = 'CEO', role = 'ceo'): CastMember => ({ role, kind: 'ceo', name, mark })
 const dev = (mark: string, name = 'Dev', role = 'dev'): CastMember => ({ role, kind: 'dev', name, mark })
 export const EXAMPLE_REELS: ExampleReel[] = [
+  {
+    id: 'launch-meeting',
+    title: '01 · Lew a supprimé les réunions',
+    topic: 'Office comedy: the boss wants fewer meetings until he sees who created them',
+    hook: "Mais Lew, pourquoi t’as supprimé toutes mes réunions ?",
+    cta: 'La réunion aurait pu être un mail. Le mail aurait pu être Lew.',
+    template: 'dev-joke',
+    environment: 'meeting-room',
+    language: 'fr',
+    cast: [lew('head'), ceo('left')],
+    tags: ['launch', 'humour', 'meetings', 'fr'],
+    duration: 23,
+    notes: "Episode 01, publication 16 octobre 2026. Fiction humoristique. Hook dès la première image, aucune intro ni logo animé. Patron sincèrement contrarié, Lew calme et impassible. Laisser respirer le regard caméra à 12.6s. Voix françaises à générer avant export ; les durées sont un montage cible, ajusté automatiquement aux clips. Couverture : IL A SUPPRIMÉ LES RÉUNIONS. Légende : On lui a demandé de nous faire gagner du temps. Il a commencé par le calendrier. Qui reconnaît son lundi matin ? #Lew #VieDeBureau #IA. Pas de promesse de viralité ni de démonstration produit : sketch fictif.",
+    script: {
+      fr: `[00:00]
+CAMERA: close-up CEO
+CEO (annoyed, 3s): "Mais Lew, pourquoi t’as supprimé toutes mes réunions ?"
+[00:03.2]
+CAMERA: close-up Lew
+Lew looks at CEO.
+LEW (deadpan, 2.6s): "Tu m’as demandé de supprimer les tâches inutiles."
+[00:06.1]
+CAMERA: close-up CEO
+CEO (annoyed, 2.3s): "C’étaient des points de synchronisation."
+[00:08.7]
+CAMERA: close-up Lew
+LEW (deadpan, 2.7s): "Pour préparer le point de préparation du point ?"
+[00:11.7]
+CAMERA: close-up CEO
+CEO looks away.
+CEO (neutral, 0.7s): "Exactement."
+[00:12.6]
+CAMERA: close-up Lew slow-push
+Lew looks at camera.
+[00:13.6]
+CAMERA: close-up CEO
+CEO (curious, 2.4s): "Bon. On fait une réunion pour en parler ?"
+[00:16.3]
+CAMERA: close-up Lew
+Lew looks at CEO.
+LEW (deadpan, 1.5s): "Je l’ai déjà supprimée."
+[00:18.1]
+CAMERA: close-up CEO
+CEO looks confused.
+CEO (confused, 1.8s): "Qui t’a donné les droits admin ?"
+[00:20.3]
+CAMERA: close-up Lew slow-push
+Lew looks at CEO.
+LEW (deadpan, 0.6s): "Toi."
+[00:21.2]
+Lew looks at camera.
+`,
+      en: `[00:00]
+CAMERA: close-up CEO
+CEO (annoyed, 3s): "Lew, why did you delete all my meetings?"
+[00:03.2]
+CAMERA: close-up Lew
+Lew looks at CEO.
+LEW (deadpan, 2.6s): "You asked me to remove pointless tasks."
+[00:06.1]
+CAMERA: close-up CEO
+CEO (annoyed, 2.3s): "Those were alignment meetings."
+[00:08.7]
+CAMERA: close-up Lew
+LEW (deadpan, 2.7s): "To prepare the meeting about preparing the meeting?"
+[00:11.7]
+CAMERA: close-up CEO
+CEO looks away.
+CEO (neutral, 0.7s): "Exactly."
+[00:12.6]
+CAMERA: close-up Lew slow-push
+Lew looks at camera.
+[00:13.6]
+CAMERA: close-up CEO
+CEO (curious, 2.4s): "Fine. Let's have a meeting about this."
+[00:16.3]
+CAMERA: close-up Lew
+Lew looks at CEO.
+LEW (deadpan, 1.5s): "Already deleted it."
+[00:18.1]
+CAMERA: close-up CEO
+CEO looks confused.
+CEO (confused, 1.8s): "Who gave you admin access?"
+[00:20.3]
+CAMERA: close-up Lew slow-push
+Lew looks at CEO.
+LEW (deadpan, 0.6s): "You."
+[00:21.2]
+Lew looks at camera.
+`
+    }
+  },
   {
   "id": "we-already-have-chatgpt",
   "title": "We already have ChatGPT",
@@ -456,7 +549,7 @@ LEW (narquois): "Un POC, c'est un agent qui n'a jamais eu de mauvaise journée."
     }
   }
 ]
-export function buildExample(reel: ExampleReel, now = '2026-10-12T00:00:00.000Z', language: ContentLanguage = 'en'): ContentProject {
+export function buildExample(reel: ExampleReel, now = '2026-10-12T00:00:00.000Z', language: ContentLanguage = reel.language ?? 'en'): ContentProject {
   const other: ContentLanguage = language === 'en' ? 'fr' : 'en'
   const studio = ContentStudio.create({
     id: `example-${reel.id}`,

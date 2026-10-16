@@ -220,7 +220,7 @@ describe('studio api', () => {
   it('ships every example reel parsed clean, compiled clean, 12 to 35 seconds, English with French behind', () => {
     const ids = new Set<string>()
     for (const reel of EXAMPLE_REELS) {
-      const studio = new ContentStudio(buildExample(reel))
+      const studio = new ContentStudio(buildExample(reel, undefined, 'en'))
       expect(ids.has(reel.id), reel.id).toBe(false)
       ids.add(reel.id)
       expect(studio.project.scripts?.fr, reel.id).toBe(reel.script.fr)
