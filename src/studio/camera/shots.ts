@@ -89,7 +89,7 @@ function basePose(type: ShotType, subjects: ShotSubjects, aspect: Aspect, zoom =
     const separation = Math.hypot(a[0] - b[0], a[2] - b[2])
     const forward = flat(sub(subjects.front, mid))
     const fov = aspect === '9:16' ? 44 : 38
-    const distance = Math.max(3.4, fit(2.8, separation + 2.0, fov, aspect)) * zoom
+    const distance = Math.max(3.4, fit(2.3, separation + 1.4, fov, aspect)) * zoom
     const position = add(add(mid, mul(forward, distance)), [0, 0.4, 0])
     return { position, target: add(mid, [0, -0.1 + dy * 0.5, 0]), fov }
   }

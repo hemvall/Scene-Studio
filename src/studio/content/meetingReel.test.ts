@@ -3,6 +3,12 @@ import { ENVIRONMENTS } from '../environments/catalog'
 import { buildExample, EXAMPLE_REELS } from './examples'
 
 describe('meeting-room reel', () => {
+  it('keeps side characters clear of the back edge of the tabletop', () => {
+    // Table spans z=-1.3..0.1. Allow 0.65m for the rotated torso and arms.
+    for (const mark of ['left', 'right', 'head']) {
+      expect(ENVIRONMENTS['meeting-room'].marks[mark]!.position[2] + 0.65).toBeLessThan(-1.3)
+    }
+  })
   it('keeps the laptop footprint and latte on the table surface', () => {
     const dressing = ENVIRONMENTS['meeting-room'].dressing
     const laptop = dressing.find(p => p.id === 'laptop')!

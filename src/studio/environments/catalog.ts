@@ -82,14 +82,14 @@ export const ENVIRONMENTS: Record<EnvironmentId, EnvironmentDef> = {
     },
     seats: [
       { position: [0, 0, -2.1], yaw: 0 },
-      { position: [-1.7, 0, -0.9], yaw: 0.7 },
-      { position: [1.7, 0, -0.9], yaw: -0.7 },
+      { position: [-1.7, 0, -2.1], yaw: 0.7 },
+      { position: [1.7, 0, -2.1], yaw: -0.7 },
       { position: [-3.3, 0, -1.6], yaw: 1.2 }
     ],
     marks: {
       head: { position: [0, 0, -2.1], yaw: 0 },
-      left: { position: [-1.7, 0, -0.9], yaw: 0.7 },
-      right: { position: [1.7, 0, -0.9], yaw: -0.7 },
+      left: { position: [-1.7, 0, -2.1], yaw: 0.7 },
+      right: { position: [1.7, 0, -2.1], yaw: -0.7 },
       board: { position: [-3.3, 0, -1.6], yaw: 1.2 }
     },
     dressing: [
