@@ -41,7 +41,7 @@ export const EXAMPLE_REELS: ExampleReel[] = [
     notes: "Episode 01, publication 16 octobre 2026. Fiction humoristique. Hook dès la première image, aucune intro ni logo animé. Patron sincèrement contrarié, Lew calme et impassible. Laisser respirer le regard caméra à 12.6s. Voix françaises à générer avant export ; les durées sont un montage cible, ajusté automatiquement aux clips. Couverture : IL A SUPPRIMÉ LES RÉUNIONS. Légende : On lui a demandé de nous faire gagner du temps. Il a commencé par le calendrier. Qui reconnaît son lundi matin ? #Lew #VieDeBureau #IA. Pas de promesse de viralité ni de démonstration produit : sketch fictif.",
     script: {
       fr: `[00:00]
-CAMERA: close-up CEO
+CAMERA: two-shot Lew CEO
 CEO (annoyed, 3s): "Mais Lew, pourquoi t’as supprimé toutes mes réunions ?"
 [00:03.2]
 CAMERA: close-up Lew
@@ -79,7 +79,7 @@ LEW (deadpan, 0.6s): "Toi."
 Lew looks at camera.
 `,
       en: `[00:00]
-CAMERA: close-up CEO
+CAMERA: two-shot Lew CEO
 CEO (annoyed, 3s): "Lew, why did you delete all my meetings?"
 [00:03.2]
 CAMERA: close-up Lew

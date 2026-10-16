@@ -10,7 +10,7 @@ Ajouter `#example=launch-meeting` à l’URL du studio. Ce lien crée un projet 
 
 | Temps | Image | Réplique |
 | --- | --- | --- |
-| 0–3 | Gros plan patron contrarié | Mais Lew, pourquoi t’as supprimé toutes mes réunions ? |
+| 0–3 | Plan à deux : Lew et le patron contrarié | Mais Lew, pourquoi t’as supprimé toutes mes réunions ? |
 | 3,2–5,8 | Lew impassible | Tu m’as demandé de supprimer les tâches inutiles. |
 | 6,1–8,4 | Patron, très sérieux | C’étaient des points de synchronisation. |
 | 8,7–11,4 | Lew | Pour préparer le point de préparation du point ? |
