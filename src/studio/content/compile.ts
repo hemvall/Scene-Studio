@@ -58,7 +58,16 @@ export function compileProject(project: ContentProject): CompileResult {
   scene.duration = Math.max(projectDuration(project),...scene.inserts.map(i=>i.end))
   scene.subtitles = structuredClone(project.scene.subtitles)
   const c = new SceneCommands(scene)
-  for (const prop of [...env.dressing, ...project.props]) c.addProp(prop.kind, prop)
+  // The AI remix reuses the meeting room but gives its wall display an actual
+  // calendar-analysis UI. Other reels retain their original dressing.
+  const dressing = project.id === 'example-launch-meeting-ai-remix'
+    ? env.dressing.map(prop => prop.id === 'tv'
+      ? { ...prop, screen: 'ai-calendar' }
+      : prop.id === 'laptop'
+        ? { ...prop, screen: 'ai-calendar' }
+        : prop)
+    : env.dressing
+  for (const prop of [...dressing, ...project.props]) c.addProp(prop.kind, prop)
   // Cast: the role is the scene id, unless it collides with an anchor of the set.
   const ids = new Map<string, string>()
   for (const member of project.cast) {
