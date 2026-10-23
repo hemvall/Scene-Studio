@@ -119,6 +119,124 @@ Lew looks at camera.
     }
   },
   {
+    id: 'launch-meeting-ai-remix',
+    title: '01B · Lew a supprimé les réunions (AI remix)',
+    topic: 'Office comedy: an AI agent cleans the calendar, then exposes the CEO as the source of pointless meetings',
+    hook: 'Mais Lew, pourquoi mon calendrier est vide ?',
+    cta: 'La réunion aurait pu être un mail. Le mail aurait pu être Lew.',
+    template: 'dev-joke',
+    environment: 'meeting-room',
+    language: 'fr',
+    cast: [lew('head'), ceo('left')],
+    tags: ['launch', 'humour', 'meetings', 'ai', 'agents', 'fr'],
+    duration: 29,
+    notes: "Alternative to launch-meeting; original untouched. Visual direction: from frame one, put recognizable ChatGPT and Claude logos on a laptop screen or office posters (use licensed/approved logo assets if available), plus a funny wall sign: 'CHATGPT + CLAUDE : 2 IA / 0 RÉUNION QUI AURAIT DÛ ÊTRE UN MAIL'. Keep logos as set dressing, not an endorsement. Show a small AI AGENT / CALENDAR CLEANUP dashboard: '12 meetings reviewed / 9 duplicates / 3 could be emails / 0 deleted without permission'. At 'j’ai préparé', show draft cancellation cards awaiting CEO approval, not a magical uncontrolled calendar wipe. When CEO approves, animate calendar slots disappearing and one notification 'Réunion de crise sur les réunions — proposition détectée'. End on Lew's deadpan look. Production note: custom logos, poster, UI overlays and animated notifications are storyboard directions; they are not automatically created by this script compiler. Aim for quick cuts, reaction pause, dry humor; voice clips determine final timing.",
+    script: {
+      fr: `[00:00]
+CAMERA: two-shot Lew CEO
+CEO (confused, 2s): "Mais Lew, pourquoi mon calendrier est vide ?"
+[00:02.3]
+CAMERA: close-up Lew
+Lew looks at laptop.
+LEW (deadpan, 2.2s): "J’ai demandé à l’IA d’analyser tes réunions."
+[00:04.8]
+CAMERA: close-up CEO
+CEO (curious, 1.1s): "Et alors ?"
+[00:06.2]
+CAMERA: close-up Lew
+LEW (deadpan, 2.3s): "Neuf doublons. Trois mails déguisés."
+[00:08.8]
+CAMERA: close-up CEO
+CEO looks confused.
+CEO (annoyed, 1.7s): "C’était de l’alignement stratégique."
+[00:10.8]
+CAMERA: close-up Lew
+LEW (deadpan, 2.1s): "Avec toi-même. Sur trois créneaux."
+[00:13.2]
+CAMERA: close-up CEO
+CEO looks away.
+PAUSE 0.5
+CEO (neutral, 0.7s): "Ah."
+[00:14.6]
+CAMERA: medium Lew
+LEW (deadpan, 2.5s): "J’ai préparé les annulations. Tu valides ?"
+[00:17.4]
+CAMERA: close-up CEO
+CEO (neutral, 0.7s): "Vas-y."
+[00:18.5]
+CAMERA: close-up Lew
+Lew nods.
+LEW (deadpan, 1.1s): "C’est fait."
+[00:20]
+CAMERA: close-up CEO
+CEO (curious, 2s): "On fait une réunion pour débriefer ?"
+[00:22.3]
+CAMERA: close-up Lew slow-push
+Lew looks at CEO.
+LEW (deadpan, 1.5s): "L’IA vient de la classer inutile."
+[00:24.2]
+CAMERA: close-up CEO
+CEO looks confused.
+CEO (confused, 1.4s): "Elle me connaît ?"
+[00:26]
+CAMERA: close-up Lew slow-push
+Lew looks at camera.
+LEW (deadpan, 1s): "Elle a ton agenda."
+`,
+      en: `[00:00]
+CAMERA: two-shot Lew CEO
+CEO (confused, 2s): "Lew, why is my calendar empty?"
+[00:02.3]
+CAMERA: close-up Lew
+Lew looks at laptop.
+LEW (deadpan, 2.2s): "I had AI review your meetings."
+[00:04.8]
+CAMERA: close-up CEO
+CEO (curious, 1.1s): "And?"
+[00:06.2]
+CAMERA: close-up Lew
+LEW (deadpan, 2.3s): "Nine duplicates. Three emails in disguise."
+[00:08.8]
+CAMERA: close-up CEO
+CEO looks confused.
+CEO (annoyed, 1.7s): "That was strategic alignment."
+[00:10.8]
+CAMERA: close-up Lew
+LEW (deadpan, 2.1s): "With yourself. Three times."
+[00:13.2]
+CAMERA: close-up CEO
+CEO looks away.
+PAUSE 0.5
+CEO (neutral, 0.7s): "Oh."
+[00:14.6]
+CAMERA: medium Lew
+LEW (deadpan, 2.5s): "I drafted the cancellations. Approve?"
+[00:17.4]
+CAMERA: close-up CEO
+CEO (neutral, 0.7s): "Go ahead."
+[00:18.5]
+CAMERA: close-up Lew
+Lew nods.
+LEW (deadpan, 1.1s): "Done."
+[00:20]
+CAMERA: close-up CEO
+CEO (curious, 2s): "Should we meet to debrief?"
+[00:22.3]
+CAMERA: close-up Lew slow-push
+Lew looks at CEO.
+LEW (deadpan, 1.5s): "AI just flagged that as pointless."
+[00:24.2]
+CAMERA: close-up CEO
+CEO looks confused.
+CEO (confused, 1.4s): "Does it know me?"
+[00:26]
+CAMERA: close-up Lew slow-push
+Lew looks at camera.
+LEW (deadpan, 1s): "It has your calendar."
+`
+    }
+  },
+  {
   "id": "we-already-have-chatgpt",
   "title": "We already have ChatGPT",
   "topic": "ChatGPT versus an agent connected to your business systems",
@@ -564,6 +682,18 @@ export function buildExample(reel: ExampleReel, now = '2026-10-12T00:00:00.000Z'
     template: reel.template,
     cast: reel.cast
   })
+  if (reel.id === 'launch-meeting-ai-remix') {
+    // Only the remix gets the AI signage; the original episode keeps its set.
+    studio.project.props.push({
+      id: 'ai-office-poster',
+      kind: 'monitor',
+      position: [2.75, 1.43, -4.37],
+      rotation: [0, 0, 0],
+      scale: 1.5,
+      color: '#22242b',
+      screen: 'ai-meeting-poster'
+    })
+  }
   studio.setScript(reel.script[language])
   studio.setAltScript(other, reel.script[other])
   studio.project.metadata.tags = [...reel.tags, 'example']

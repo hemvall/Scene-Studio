@@ -52,7 +52,9 @@ export interface ActingCue {
   command: ActingCommand
   target?: string
 }
+export interface PublishingCopy { instagram: string; tiktok: string; hashtags: string[]; coverTitle: string; coverSubtitle: string }
 export interface ProjectMeta {
+  publishing?: PublishingCopy
   createdAt: string
   updatedAt: string
   renderedAt?: string
@@ -275,6 +277,14 @@ export function validateProject(input: unknown): ContentProject {
   if (meta.renderedAt !== undefined) text(meta.renderedAt, 'renderedAt', 40)
   list(meta.tags, 20, 'tags').forEach((t) => text(t, 'tag', 40))
   text(meta.notes, 'notes', 100000, true)
+  if (meta.publishing !== undefined) {
+    const pub = record(meta.publishing, 'publishing')
+    text(pub.instagram, 'Instagram caption', 4000, true)
+    text(pub.tiktok, 'TikTok caption', 4000, true)
+    text(pub.coverTitle, 'cover title', 100, true)
+    text(pub.coverSubtitle, 'cover subtitle', 100, true)
+    list(pub.hashtags, 30, 'hashtags').forEach(tag => text(tag, 'hashtag', 80))
+  }
   if (meta.thumbnail !== undefined) text(meta.thumbnail, 'thumbnail', 200_000)
   if (meta.variantOf !== undefined) text(meta.variantOf, 'variantOf', 60)
   const scene = validateScene(p.scene)

@@ -8,6 +8,7 @@ import StudioOutliner from './StudioOutliner.vue'
 import StudioDirector from './StudioDirector.vue'
 import StudioScript from './StudioScript.vue'
 import StudioLibrary from './StudioLibrary.vue'
+import StudioPublishing from './StudioPublishing.vue'
 import { useStudioDocument } from './useStudioDocument'
 import { OUTPUT_SIZE } from '@/studio/scene/model'
 import { cameraAt } from '@/studio/timeline/evaluate'
@@ -20,6 +21,11 @@ async function generateSpeech() {
 }
 const exportOpen = ref(false)
 const focusView = ref(false)
+const publishingOpen = ref(false)
+function savePublishing(value: import('@/studio/content/project').PublishingCopy) {
+  studio.editProject(p => { p.project.metadata.publishing = value })
+  message.value = 'Publishing copy saved to project'
+}
 const clock = computed(() => {
   const t = time.value,
     m = Math.floor(t / 60),
@@ -62,6 +68,7 @@ const exportPercent = computed(() => (exporting.value.total ? Math.round((export
           <Icon :name="studio.audio.muted.value ? 'mute' : studio.audio.mixing.value ? 'mixing' : 'sound'" />
         </button>
         <button class="ghost" :disabled="studio.audio.voiceProgress.value.running" @click="generateSpeech"><Icon name="mic"/> {{ studio.audio.voiceProgress.value.running ? 'Generating voices…' : studio.audio.voicedLines.value ? 'Voices ready' : 'Generate voices' }}</button>
+        <button class="ghost" @click="publishingOpen = !publishingOpen">{{ publishingOpen ? "Editor" : "Publishing" }}</button>
         <button class="ghost focus-toggle" :aria-pressed="focusView" @click="focusView = !focusView"><Icon name="scene" /> {{ focusView ? 'Show panels' : 'Focus view' }}</button>
         <button class="ghost" title="Rebuild the timeline from the script" @click="studio.compile()"><Icon name="refresh" /> Compile</button>
         <div class="menu" @click.stop>
@@ -77,7 +84,8 @@ const exportPercent = computed(() => (exporting.value.total ? Math.round((export
           </div>
         </div>
       </header>
-      <div class="workspace" :class="{ 'focus-view': focusView }">
+      <div v-if="publishingOpen" style="height:calc(100vh - 145px);overflow:auto"><StudioPublishing :project="project" @update="savePublishing" /></div>
+      <div v-show="!publishingOpen" class="workspace" :class="{ 'focus-view': focusView }">
         <aside v-show="!focusView" class="outliner">
           <div class="segmented tabs" role="tablist">
             <button role="tab" :aria-selected="leftPanel === 'script'" :class="{ active: leftPanel === 'script' }" @click="leftPanel = 'script'"><Icon name="script" /> Script</button>
@@ -126,7 +134,7 @@ const exportPercent = computed(() => (exporting.value.total ? Math.round((export
           <StudioDirector v-show="panel === 'director'" :studio="studio" />
         </aside>
       </div>
-      <StudioTimeline :studio="studio" />
+      <StudioTimeline v-show="!publishingOpen" :studio="studio" />
     </template>
     <input :ref="studio.fileInput" type="file" accept=".json,application/json" hidden @change="studio.importFile" />
     <div v-if="jsonOpen" class="backdrop" @click.self="jsonOpen = false">
