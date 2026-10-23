@@ -58,6 +58,27 @@ function wordmark(ctx: CanvasRenderingContext2D, x: number, y: number, size: num
   ctx.arc(x + w + size * 0.3, y - size * 0.3, size * 0.14, 0, Math.PI * 2)
   ctx.fill()
 }
+/** Small brand cues painted locally: recognizable colors + simplified emblems and names.
+ * These are illustrative marks, not official logo assets or endorsements. */
+function aiBrandMarks(ctx: CanvasRenderingContext2D, x: number, y: number, u: number) {
+  const brands = [
+    { name: 'ChatGPT', color: '#10a37f', symbol: '✳' },
+    { name: 'Claude', color: '#d97757', symbol: '✺' }
+  ]
+  brands.forEach((brand, i) => {
+    const bx = x + i * 122 * u
+    rounded(ctx, bx, y, 112 * u, 30 * u, 6 * u, '#ffffff')
+    rounded(ctx, bx + 5 * u, y + 5 * u, 20 * u, 20 * u, 5 * u, brand.color)
+    ctx.textAlign = 'center'
+    font(ctx, 15 * u, 700)
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText(brand.symbol, bx + 15 * u, y + 21 * u)
+    ctx.textAlign = 'left'
+    font(ctx, 12 * u, 800)
+    ctx.fillStyle = '#192333'
+    ctx.fillText(brand.name, bx + 31 * u, y + 20 * u)
+  })
+}
 export function paintScreen(id: ScreenId, canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext('2d')!
   const W = canvas.width,
@@ -249,7 +270,7 @@ export function paintScreen(id: ScreenId, canvas: HTMLCanvasElement) {
       ctx.fillText('AI AGENT  /  CALENDAR', 25 * u, 42 * u)
       font(ctx, 11 * u, 600)
       ctx.fillStyle = ACCENT
-      ctx.fillText('ChatGPT  +  Claude', 25 * u, 65 * u)
+      aiBrandMarks(ctx, 25 * u, 49 * u, u)
       const rows: [string, string, string][] = [
         ['12', 'MEETINGS REVIEWED', BLUE],
         ['09', 'DUPLICATES FOUND', ACCENT],
@@ -276,7 +297,7 @@ export function paintScreen(id: ScreenId, canvas: HTMLCanvasElement) {
       ctx.textAlign = 'center'
       font(ctx, 21 * u, 800)
       ctx.fillStyle = '#192333'
-      ctx.fillText('ChatGPT  +  Claude', W / 2, 56 * u)
+      aiBrandMarks(ctx, W / 2 - 117 * u, 29 * u, u)
       font(ctx, 38 * u, 900)
       ctx.fillStyle = '#ba5b24'
       ctx.fillText('2 IA', W / 2, 122 * u)
