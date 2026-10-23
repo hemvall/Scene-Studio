@@ -682,6 +682,18 @@ export function buildExample(reel: ExampleReel, now = '2026-10-12T00:00:00.000Z'
     template: reel.template,
     cast: reel.cast
   })
+  if (reel.id === 'launch-meeting-ai-remix') {
+    // Only the remix gets the AI signage; the original episode keeps its set.
+    studio.project.props.push({
+      id: 'ai-office-poster',
+      kind: 'monitor',
+      position: [2.75, 1.43, -4.37],
+      rotation: [0, 0, 0],
+      scale: 1.5,
+      color: '#22242b',
+      screen: 'ai-meeting-poster'
+    })
+  }
   studio.setScript(reel.script[language])
   studio.setAltScript(other, reel.script[other])
   studio.project.metadata.tags = [...reel.tags, 'example']
