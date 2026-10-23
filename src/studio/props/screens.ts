@@ -2,8 +2,8 @@
  * Screen contents painted once into a canvas: the Lew product inside the story.
  * Each painter draws for any canvas size; ids are what the document stores.
  */
-export type ScreenId = 'blank' | 'lew-dashboard' | 'agent-workflow' | 'crm' | 'chat' | 'terminal' | 'notification'
-export const SCREEN_IDS: ScreenId[] = ['blank', 'lew-dashboard', 'agent-workflow', 'crm', 'chat', 'terminal', 'notification']
+export type ScreenId = 'blank' | 'lew-dashboard' | 'agent-workflow' | 'crm' | 'chat' | 'terminal' | 'notification' | 'ai-calendar' | 'ai-meeting-poster'
+export const SCREEN_IDS: ScreenId[] = ['blank', 'lew-dashboard', 'agent-workflow', 'crm', 'chat', 'terminal', 'notification', 'ai-calendar', 'ai-meeting-poster']
 export const SCREEN_LABELS: Record<ScreenId, string> = {
   blank: 'Blank',
   'lew-dashboard': 'Lew workspace',
@@ -11,7 +11,9 @@ export const SCREEN_LABELS: Record<ScreenId, string> = {
   crm: 'CRM table',
   chat: 'Chat',
   terminal: 'Terminal',
-  notification: 'Lew notification'
+  notification: 'Lew notification',
+  'ai-calendar': 'AI calendar review',
+  'ai-meeting-poster': 'AI meeting poster'
 }
 export function isScreenId(value: string): value is ScreenId {
   return (SCREEN_IDS as string[]).includes(value)
@@ -237,6 +239,57 @@ export function paintScreen(id: ScreenId, canvas: HTMLCanvasElement) {
         ctx.fillStyle = color
         ctx.fillText(text, 14 * u, (24 + i * 16) * u)
       })
+      break
+    }
+    case 'ai-calendar': {
+      // Legible, persistent visual cue in the rendered meeting room, not a storyboard note.
+      rounded(ctx, 12 * u, 12 * u, W - 24 * u, H - 24 * u, 10 * u, PANEL, LINE)
+      font(ctx, 18 * u, 800)
+      ctx.fillStyle = TEXT
+      ctx.fillText('AI AGENT  /  CALENDAR', 25 * u, 42 * u)
+      font(ctx, 11 * u, 600)
+      ctx.fillStyle = ACCENT
+      ctx.fillText('ChatGPT  +  Claude', 25 * u, 65 * u)
+      const rows: [string, string, string][] = [
+        ['12', 'MEETINGS REVIEWED', BLUE],
+        ['09', 'DUPLICATES FOUND', ACCENT],
+        ['03', 'COULD BE EMAILS', GREEN]
+      ]
+      rows.forEach(([value, label, color], i) => {
+        const y = (82 + i * 48) * u
+        rounded(ctx, 25 * u, y, W - 50 * u, 40 * u, 6 * u, BG, LINE)
+        font(ctx, 23 * u, 800)
+        ctx.fillStyle = color
+        ctx.fillText(value, 37 * u, y + 27 * u)
+        font(ctx, 12 * u, 600)
+        ctx.fillStyle = TEXT
+        ctx.fillText(label, 100 * u, y + 25 * u)
+      })
+      font(ctx, 11 * u, 700)
+      ctx.fillStyle = GREEN
+      ctx.fillText('CANCELLATIONS: APPROVAL REQUIRED', 25 * u, H - 24 * u)
+      break
+    }
+    case 'ai-meeting-poster': {
+      ctx.fillStyle = '#f6f1df'
+      ctx.fillRect(0, 0, W, H)
+      ctx.textAlign = 'center'
+      font(ctx, 21 * u, 800)
+      ctx.fillStyle = '#192333'
+      ctx.fillText('ChatGPT  +  Claude', W / 2, 56 * u)
+      font(ctx, 38 * u, 900)
+      ctx.fillStyle = '#ba5b24'
+      ctx.fillText('2 IA', W / 2, 122 * u)
+      font(ctx, 30 * u, 800)
+      ctx.fillStyle = '#192333'
+      ctx.fillText('0 REUNION', W / 2, 170 * u)
+      font(ctx, 16 * u, 700)
+      ctx.fillText('QUI AURAIT DU', W / 2, 209 * u)
+      ctx.fillText('ETRE UN MAIL', W / 2, 236 * u)
+      font(ctx, 12 * u, 600)
+      ctx.fillStyle = '#776a60'
+      ctx.fillText('BUREAU DES BONNES IDEES', W / 2, H - 18 * u)
+      ctx.textAlign = 'left'
       break
     }
     case 'notification': {
